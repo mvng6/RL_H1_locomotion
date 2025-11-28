@@ -1,0 +1,22 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# ROS2 / Colcon
+install/
+log/
+build/
+
+# Isaac Lab / Sim
+*.usd
+*.usda
+*.usdc
+logs/
+runs/
+output/

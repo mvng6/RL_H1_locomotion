@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools", "wheel", "toml"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "h1_locomotion"
+version = "0.1.0"
+description = "RL environment for Unitree H1 humanoid robot locomotion"
+requires-python = ">=3.10"
+dependencies = [
+    "isaaclab",
+]
+

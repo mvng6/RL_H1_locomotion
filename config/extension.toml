@@ -1,0 +1,23 @@
+[package]
+
+# Note: Semantic Versioning is used: https://semver.org/
+version = "0.1.0"
+
+# Description
+title = "H1 Locomotion"
+description = "RL environment for Unitree H1"
+readme = "../../README.md"
+repository = ""
+category = "robotics"
+keywords = ["robotics", "rl", "locomotion", "humanoid", "h1"]
+
+[dependencies]
+"isaaclab" = {}
+"isaaclab_assets" = {}
+
+[core]
+reloadable = false
+
+[[python.module]]
+name = "rl_project_ws.exts.h1_locomotion"
+
