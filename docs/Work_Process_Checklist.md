@@ -4,7 +4,7 @@
 
 ## 📊 현재 진행 상황 요약
 
-**전체 진행률**: Phase 1 진행 중 (약 40% 완료)
+**전체 진행률**: Phase 1 진행 중 (약 75% 완료 - 코드 작성 완료, 검증 단계)
 
 ### ✅ 완료된 작업
 - Phase 1.1: 디렉토리 구조 생성 완료
@@ -12,20 +12,19 @@
 - Phase 1.3: 보상 함수 정의 완료 (`rewards.py`) - 위상 기반 보상 포함
 - Phase 1.4: 종료 조건 정의 완료 (`terminations.py`)
 - Phase 1.5: MDP 모듈 초기화 완료 (`mdp/__init__.py`)
+- Phase 1.6: 환경 설정 파일 작성 완료 (`walking_env_cfg.py`)
+- Phase 1.7: 에이전트 설정 파일 작성 완료 (`config/agents/walking_ppo_cfg.py`)
+- Phase 1.8: 환경 등록 완료 (`walking/__init__.py`)
+- Phase 1.9: 메인 `__init__.py` 업데이트 완료 (`tasks/__init__.py`)
 
 ### ⏳ 진행 중인 작업
-- Phase 1.4: 종료 조건 정의 ✅ (완료됨)
-- Phase 1.5: MDP 모듈 초기화 (기본 구조만 있음)
-- Phase 1.6: 환경 설정 파일 작성 (파일만 생성됨, 내용 작성 필요)
-- Phase 1.7: 에이전트 설정 파일 작성 (파일 생성 필요)
-- Phase 1.8: 환경 등록 (파일만 생성됨, 내용 작성 필요)
-- Phase 1.9: 메인 `__init__.py` 업데이트 (기본 구조만 있음)
+- Phase 1.10: 프로젝트 재설치 및 검증 (다음 단계)
 
 ### 📝 다음 단계
-1. **환경 설정 파일 작성** (`walking/walking_env_cfg.py`) - 가장 우선순위
-2. **에이전트 설정 파일 작성** (`config/agents/walking_ppo_cfg.py`)
-3. **환경 등록** (`walking/__init__.py`)
-4. **메인 `__init__.py` 업데이트** (`tasks/__init__.py`)
+1. **프로젝트 재설치 및 검증** - 가장 우선순위
+2. **Zero Agent 테스트**
+3. **기본 보행 학습 실행**
+4. **학습 완료 및 체크포인트 확인**
 
 ---
 
@@ -236,44 +235,44 @@
 
 ### 1.6 환경 설정 파일 작성 (`walking/walking_env_cfg.py`)
 
-**상태**: ⏳ 진행 중 (파일만 생성됨, 내용 작성 필요)
+**상태**: ✅ 완료됨
 
 - [x] 파일이 존재하는지 확인 ✅
-- [ ] 기본 구조 작성
-  - [ ] Copyright 헤더
-  - [ ] 필요한 import 문들
+- [x] 기본 구조 작성 ✅
+  - [x] Copyright 헤더 ✅
+  - [x] 필요한 import 문들 ✅
 
-- [ ] `WalkingSceneCfg` 클래스 작성
-  - [ ] `InteractiveSceneCfg` 상속
-  - [ ] `@configclass` 데코레이터
-  - [ ] 지면 생성 설정 (`ground`)
-  - [ ] 조명 설정 (`dome_light`)
-  - [ ] H1 로봇 설정 (`robot`)
-  - [ ] 접촉 센서 설정 (`contact_forces`)
+- [x] `WalkingSceneCfg` 클래스 작성 ✅
+  - [x] `InteractiveSceneCfg` 상속 ✅
+  - [x] `@configclass` 데코레이터 ✅
+  - [x] 지면 생성 설정 (`ground`) ✅
+  - [x] 조명 설정 (`dome_light`) ✅
+  - [x] H1 로봇 설정 (`robot`) ✅
+  - [x] 접촉 센서 설정 (`contact_forces`) ✅
 
-- [ ] `WalkingEnvCfg` 클래스 작성
-  - [ ] `ManagerBasedRLEnvCfg` 상속
-  - [ ] `@configclass` 데코레이터
-  - [ ] 씬 설정 (`scene`)
-  - [ ] 관측 설정 (`observations`)
-  - [ ] 액션 설정 (`actions`)
-  - [ ] 보상 설정 (`rewards`)
-  - [ ] 종료 조건 설정 (`terminations`)
-  - [ ] 명령 생성 설정 (`commands`) ← **중요**: `"base_velocity"` 이름으로 정의
-  - [ ] 이벤트 설정 (`events`)
-  - [ ] 에피소드 길이 설정 (`episode_length_s`)
-  - [ ] 시뮬레이션 설정 (`sim`)
+- [x] `WalkingEnvCfg` 클래스 작성 ✅
+  - [x] `ManagerBasedRLEnvCfg` 상속 ✅
+  - [x] `@configclass` 데코레이터 ✅
+  - [x] 씬 설정 (`scene`) ✅
+  - [x] 관측 설정 (`observations`) ✅
+  - [x] 액션 설정 (`actions`) ✅
+  - [x] 보상 설정 (`rewards`) ✅
+  - [x] 종료 조건 설정 (`terminations`) ✅
+  - [x] 명령 생성 설정 (`commands`) ✅ ← **중요**: `"base_velocity"` 이름으로 정의됨
+  - [x] 이벤트 설정 (`events`) ✅
+  - [x] 에피소드 길이 설정 (`episode_length_s=20.0`) ✅
+  - [x] 시뮬레이션 설정 (`sim`) ✅
 
 **검증 사항**:
-- [ ] 모든 설정이 올바르게 정의됨
-- [ ] 명령 범위가 적절함 (`lin_vel_x=(0.0, 1.0)`)
-- [ ] 에피소드 길이가 적절함 (`20.0` 초)
-- [ ] `commands` 딕셔너리에 `"base_velocity"` 키가 있음 (observations.py와 일치)
-- [ ] 코드에 문법 오류 없음
+- [x] 모든 설정이 올바르게 정의됨 ✅
+- [x] 명령 범위가 적절함 (`lin_vel_x=(0.0, 1.0)`) ✅
+- [x] 에피소드 길이가 적절함 (`20.0` 초) ✅
+- [x] `commands` 딕셔너리에 `"base_velocity"` 키가 있음 (observations.py와 일치) ✅
+- [x] 코드에 문법 오류 없음 ✅
 
 ### 1.7 에이전트 설정 파일 작성 (`config/agents/walking_ppo_cfg.py`)
 
-**상태**: ⏳ 진행 중 (디렉토리만 존재, 파일 생성 필요)
+**상태**: ✅ 완료됨
 
 - [x] 디렉토리 확인 ✅
   ```bash
@@ -281,7 +280,7 @@
   ```
   - [x] `config/agents/__init__.py` 존재 ✅
 
-- [ ] 파일 생성 및 기본 구조 작성
+- [x] 파일 생성 및 기본 구조 작성 ✅
   ```python
   # Copyright (c) 2025, RL Project Workspace
   # All rights reserved.
@@ -294,52 +293,66 @@
   from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg
   ```
 
-- [ ] `WalkingPPORunnerCfg` 클래스 정의
-  - [ ] `RslRlOnPolicyRunnerCfg` 상속
-  - [ ] `@configclass` 데코레이터
+- [x] `WalkingPPORunnerCfg` 클래스 정의 ✅
+  - [x] `RslRlOnPolicyRunnerCfg` 상속 ✅
+  - [x] `@configclass` 데코레이터 ✅
 
-- [ ] 환경 설정 파라미터 추가
-  - [ ] `num_steps_per_env = 24`
-  - [ ] `max_iterations = 3000`
-  - [ ] `save_interval = 50`
+- [x] 환경 설정 파라미터 추가 ✅
+  - [x] `num_steps_per_env = 24` ✅
+  - [x] `max_iterations = 3000` ✅
+  - [x] `save_interval = 50` ✅
 
-- [ ] 실험 설정 파라미터 추가
-  - [ ] `experiment_name = "h1_walking"`
-  - [ ] `run_name = ""`
-  - [ ] `seed = 42`
+- [x] 실험 설정 파라미터 추가 ✅
+  - [x] `experiment_name = "h1_walking"` ✅
+  - [x] `run_name = ""` ✅
+  - [x] `seed = 42` ✅
 
-- [ ] 정책 네트워크 설정 추가
-  - [ ] `policy: RslRlPpoActorCriticCfg` 설정
-  - [ ] `init_noise_std=1.0`
-  - [ ] `actor_hidden_dims=[512, 256, 128]`
-  - [ ] `critic_hidden_dims=[512, 256, 128]`
-  - [ ] `activation="elu"`
+- [x] 정책 네트워크 설정 추가 ✅
+  - [x] `policy: RslRlPpoActorCriticCfg` 설정 ✅
+  - [x] `init_noise_std=1.0` ✅
+  - [x] `actor_hidden_dims=[512, 256, 128]` ✅
+  - [x] `critic_hidden_dims=[512, 256, 128]` ✅
+  - [x] `activation="elu"` ✅
 
-- [ ] PPO 알고리즘 설정 추가
-  - [ ] `algorithm: RslRlPpoAlgorithmCfg` 설정
-  - [ ] 모든 하이퍼파라미터 설정 확인
+- [x] PPO 알고리즘 설정 추가 ✅
+  - [x] `algorithm: RslRlPpoAlgorithmCfg` 설정 ✅
+  - [x] 모든 하이퍼파라미터 설정 확인 ✅
+    - [x] `value_loss_coef=1.0` ✅
+    - [x] `use_clipped_value_loss=True` ✅
+    - [x] `clip_param=0.2` ✅
+    - [x] `entropy_coef=0.01` ✅
+    - [x] `num_learning_epochs=5` ✅
+    - [x] `num_mini_batches=4` ✅
+    - [x] `learning_rate=1.0e-3` ✅
+    - [x] `schedule="adaptive"` ✅
+    - [x] `gamma=0.99` ✅
+    - [x] `lam=0.95` ✅
+    - [x] `desired_kl=0.01` ✅
+    - [x] `max_grad_norm=1.0` ✅
+
+- [x] `config/agents/__init__.py`에 export 추가 ✅
 
 **검증 사항**:
-- [ ] 모든 설정이 올바르게 정의됨
-- [ ] 하이퍼파라미터 값이 적절함
-- [ ] 코드에 문법 오류 없음
+- [x] 모든 설정이 올바르게 정의됨 ✅
+- [x] 하이퍼파라미터 값이 적절함 ✅
+- [x] 코드에 문법 오류 없음 ✅
 
 ### 1.8 환경 등록 (`walking/__init__.py`)
 
-**상태**: ⏳ 진행 중 (파일만 생성됨, 내용 작성 필요)
+**상태**: ✅ 완료됨
 
 - [x] 파일이 존재하는지 확인 ✅
-- [ ] 기본 구조 작성
-  - [ ] Copyright 헤더
-  - [ ] `gymnasium as gym` import
+- [x] 기본 구조 작성 ✅
+  - [x] Copyright 헤더 ✅
+  - [x] `gymnasium as gym` import ✅
 
-- [ ] 환경 설정 및 에이전트 설정 import
+- [x] 환경 설정 및 에이전트 설정 import ✅
   ```python
   from . import walking_env_cfg
   from ..config.agents import walking_ppo_cfg
   ```
 
-- [ ] Gymnasium 환경 등록
+- [x] Gymnasium 환경 등록 ✅
   ```python
   gym.register(
       id="H1-Walking-v0",
@@ -353,37 +366,51 @@
   ```
 
 **검증 사항**:
-- [ ] 환경 ID가 올바름 (`H1-Walking-v0`)
-- [ ] Entry point가 올바름
-- [ ] Config entry point가 올바름
-- [ ] 코드에 문법 오류 없음
+- [x] 환경 ID가 올바름 (`H1-Walking-v0`) ✅
+- [x] Entry point가 올바름 ✅
+- [x] Config entry point가 올바름 ✅
+- [x] 코드에 문법 오류 없음 ✅
 
 ### 1.9 메인 `__init__.py` 업데이트 (`tasks/__init__.py`)
 
-**상태**: ⏳ 진행 중 (기본 구조만 있음, import 추가 필요)
+**상태**: ✅ 완료됨
 
 - [x] 파일 확인 ✅
   ```bash
   cat tasks/__init__.py
   ```
-  - [x] 기본 구조 존재 (Copyright 헤더, 주석)
+  - [x] 기본 구조 존재 (Copyright 헤더, 주석) ✅
 
-- [ ] Walking 태스크 import 추가
+- [x] Walking 태스크 import 추가 ✅
   ```python
   from . import walking
   ```
 
-- [ ] 다른 태스크 import는 주석 처리 (아직 구현 전)
+- [x] 다른 태스크 import는 주석 처리 (아직 구현 전) ✅
   ```python
   # from . import running
   # from . import jumping
   ```
 
 **검증 사항**:
-- [ ] Walking 태스크가 올바르게 import됨
-- [ ] 다른 태스크는 주석 처리됨
+- [x] Walking 태스크가 올바르게 import됨 ✅
+- [x] 다른 태스크는 주석 처리됨 ✅
+- [x] 코드에 문법 오류 없음 ✅
 
 ### 1.10 프로젝트 재설치 및 검증
+
+**상태**: ⏳ 다음 단계
+
+**중요**: Isaac Lab이 외부 의존성으로 사용되는 경우, Isaac Lab의 Python 환경을 사용하여 설치해야 합니다.
+
+#### 방법 1: Isaac Lab의 `isaaclab.sh` 사용 (권장)
+
+- [ ] Isaac Lab 경로 확인
+  ```bash
+  # Isaac Lab이 설치된 경로 확인
+  # 예: /home/ldj/IsaacLab 또는 /path/to/IsaacLab
+  echo $ISAAC_LAB_PATH  # 환경 변수가 설정되어 있는지 확인
+  ```
 
 - [ ] 프로젝트 디렉토리로 이동
   ```bash
@@ -392,24 +419,75 @@
 
 - [ ] 프로젝트 재설치
   ```bash
-  # Isaac Lab 경로는 실제 경로로 변경 필요
+  # 방법 1-A: Isaac Lab 경로를 직접 지정
   /path/to/IsaacLab/isaaclab.sh -p -m pip install -e exts/h1_locomotion --force-reinstall
+  
+  # 방법 1-B: 환경 변수 사용 (ISAAC_LAB_PATH가 설정된 경우)
+  $ISAAC_LAB_PATH/isaaclab.sh -p -m pip install -e exts/h1_locomotion --force-reinstall
+  
+  # 방법 1-C: 상대 경로 사용 (현재 디렉토리가 Isaac Lab인 경우)
+  # cd /path/to/IsaacLab
+  # ./isaaclab.sh -p -m pip install -e /home/ldj/RL_project_ws/exts/h1_locomotion --force-reinstall
   ```
 
-- [ ] 설치 성공 확인
-  - [ ] 에러 메시지 없음
-  - [ ] "Successfully installed" 메시지 확인
+#### 방법 2: PYTHONPATH 설정 후 일반 pip 사용
+
+- [ ] Isaac Lab의 Python 경로 확인
+  ```bash
+  # Isaac Lab의 Python 경로 확인
+  /path/to/IsaacLab/isaaclab.sh -p -c "import sys; print(sys.executable)"
+  ```
+
+- [ ] PYTHONPATH 설정
+  ```bash
+  # Isaac Lab의 Python 경로를 PYTHONPATH에 추가
+  export PYTHONPATH="/path/to/IsaacLab/source:$PYTHONPATH"
+  ```
+
+- [ ] 프로젝트 설치
+  ```bash
+  cd /home/ldj/RL_project_ws/exts/h1_locomotion
+  /path/to/IsaacLab/isaaclab.sh -p -m pip install -e . --force-reinstall
+  ```
+
+#### 설치 성공 확인
+
+- [x] 설치 성공 확인 ✅
+  ```bash
+  # 설치 후 출력 확인
+  # "Successfully installed h1-locomotion" 메시지가 나타남 ✅
+  # 패키지가 설치되었지만, conda 환경에서 테스트 필요
+  ```
+
+**⚠️ 중요**: 일반 Python 환경이 아닌 **conda 환경(`env_isaaclab`) 또는 Isaac Lab의 Python 환경**에서 테스트해야 합니다.
 
 - [ ] 환경 등록 확인
   ```bash
+  # 방법 1: Isaac Lab의 list_envs.py 사용
   /path/to/IsaacLab/isaaclab.sh -p scripts/environments/list_envs.py | grep H1
+  
+  # 방법 2: Python에서 직접 확인
+  /path/to/IsaacLab/isaaclab.sh -p -c "import gymnasium as gym; print([env for env in gym.envs.registry.env_specs.keys() if 'H1' in env])"
   ```
   - [ ] `H1-Walking-v0` 환경이 목록에 나타남
 
+- [ ] Import 테스트
+  ```bash
+  # Python에서 직접 import 테스트
+  /path/to/IsaacLab/isaaclab.sh -p -c "
+  from h1_locomotion.tasks.walking import walking_env_cfg
+  from h1_locomotion.config.agents import walking_ppo_cfg
+  import gymnasium as gym
+  print('Import 성공!')
+  print('환경 등록 확인:', 'H1-Walking-v0' in gym.envs.registry.env_specs)
+  "
+  ```
+
 **검증 사항**:
 - [ ] 프로젝트가 올바르게 설치됨
-- [ ] 환경이 올바르게 등록됨
+- [ ] 환경이 올바르게 등록됨 (`H1-Walking-v0` 확인)
 - [ ] Import 오류 없음
+- [ ] 모든 모듈이 올바르게 로드됨
 
 ### 1.11 Zero Agent 테스트
 
@@ -679,10 +757,10 @@
   - [x] 1.3 보상 함수 정의 ✅ (완료됨 - 위상 기반 보상 포함)
   - [x] 1.4 종료 조건 정의 ✅ (완료됨)
   - [x] 1.5 MDP 모듈 초기화 ✅ (완료됨)
-  - [ ] 1.6 환경 설정 파일 작성 ⏳ (파일만 생성됨, 내용 작성 필요)
-  - [ ] 1.7 에이전트 설정 파일 작성 ⏳ (파일 생성 필요)
-  - [ ] 1.8 환경 등록 ⏳ (파일만 생성됨, 내용 작성 필요)
-  - [ ] 1.9 메인 `__init__.py` 업데이트 ⏳ (기본 구조만 있음)
+  - [x] 1.6 환경 설정 파일 작성 ✅ (완료됨)
+  - [x] 1.7 에이전트 설정 파일 작성 ✅ (완료됨)
+  - [x] 1.8 환경 등록 ✅ (완료됨)
+  - [x] 1.9 메인 `__init__.py` 업데이트 ✅ (완료됨)
   - [ ] 1.10 프로젝트 재설치 및 검증
   - [ ] 1.11 Zero Agent 테스트
   - [ ] 1.12 기본 보행 학습 실행
