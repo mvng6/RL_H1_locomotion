@@ -5,11 +5,36 @@
 
 """종료 조건 정의 - 기본 보행 태스크."""
 
-from isaaclab.managers import DoneTermCfg as DoneTerm
+import torch
+from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.utils import configclass
 from isaaclab.managers import SceneEntityCfg
 
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
+
+
+def base_height(env, asset_cfg: SceneEntityCfg, minimum_height: float = 0.3, maximum_height: float = 2.0) -> torch.Tensor:
+    """베이스 높이가 허용 범위를 벗어나면 종료 조건을 만족하는지 확인.
+    
+    Args:
+        env: 강화학습 환경 객체
+        asset_cfg: 에셋 설정 (로봇)
+        minimum_height: 최소 높이 (m)
+        maximum_height: 최대 높이 (m)
+    
+    Returns:
+        torch.Tensor: (num_envs,) 형태의 종료 플래그 텐서
+        True: 높이가 범위를 벗어남 (종료 필요)
+        False: 높이가 정상 범위 내
+    """
+    # 로봇 베이스의 현재 높이 가져오기
+    root_pos_w = env.scene[asset_cfg.asset_name].data.root_pos_w
+    current_height = root_pos_w[:, 2]  # Z 좌표 (높이)
+    
+    # 높이가 범위를 벗어났는지 확인
+    out_of_bounds = (current_height < minimum_height) | (current_height > maximum_height)
+    
+    return out_of_bounds
 
 
 @configclass
@@ -40,8 +65,9 @@ class TerminationsCfg:
     # - minimum_height: 최소 높이 (너무 낮으면 땅에 떨어짐)
     # - maximum_height: 최대 높이 (너무 높으면 비현실적)
     base_height = DoneTerm(
-        func=mdp.base_height,
+        func=base_height,  # 위에서 정의한 커스텀 함수 사용
         params={
+            "asset_cfg": SceneEntityCfg("robot"),  # 로봇 에셋 설정
             "minimum_height": 0.3,  # 최소 높이: 0.3m (땅에 떨어짐 방지)
             "maximum_height": 2.0,  # 최대 높이: 2.0m (비현실적인 점프 방지)
         },

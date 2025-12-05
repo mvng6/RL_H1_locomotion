@@ -8,8 +8,12 @@ version = "0.1.0"
 description = "RL environment for Unitree H1 humanoid robot locomotion"
 requires-python = ">=3.10"
 authors = [
-    {name = ldj, email = zinith7@naver.com},
+    {name = "ldj", email = "zinith7@naver.com"},
 ]
 dependencies = [
     "isaaclab",
 ]
+
+[tool.setuptools]
+# setup.py를 사용하므로 여기서는 비활성화
+# package-dir과 packages 설정은 setup.py에서 관리
