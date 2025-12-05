@@ -4,15 +4,17 @@
 
 ## 📊 현재 진행 상황 요약
 
-**전체 진행률**: Phase 1 진행 중 (약 25% 완료)
+**전체 진행률**: Phase 1 진행 중 (약 40% 완료)
 
 ### ✅ 완료된 작업
 - Phase 1.1: 디렉토리 구조 생성 완료
 - Phase 1.2: 관측 공간 정의 완료 (`observations.py`)
-- Phase 1.3: 보상 함수 정의 완료 (`rewards.py`)
+- Phase 1.3: 보상 함수 정의 완료 (`rewards.py`) - 위상 기반 보상 포함
+- Phase 1.4: 종료 조건 정의 완료 (`terminations.py`)
+- Phase 1.5: MDP 모듈 초기화 완료 (`mdp/__init__.py`)
 
 ### ⏳ 진행 중인 작업
-- Phase 1.4: 종료 조건 정의 (파일만 생성됨, 내용 작성 필요)
+- Phase 1.4: 종료 조건 정의 ✅ (완료됨)
 - Phase 1.5: MDP 모듈 초기화 (기본 구조만 있음)
 - Phase 1.6: 환경 설정 파일 작성 (파일만 생성됨, 내용 작성 필요)
 - Phase 1.7: 에이전트 설정 파일 작성 (파일 생성 필요)
@@ -20,10 +22,10 @@
 - Phase 1.9: 메인 `__init__.py` 업데이트 (기본 구조만 있음)
 
 ### 📝 다음 단계
-1. **종료 조건 작성** (`walking/mdp/terminations.py`) - 가장 우선순위
-2. **MDP 모듈 초기화** (`walking/mdp/__init__.py`)
-3. **환경 설정 파일 작성** (`walking/walking_env_cfg.py`)
-4. **에이전트 설정 파일 작성** (`config/agents/walking_ppo_cfg.py`)
+1. **환경 설정 파일 작성** (`walking/walking_env_cfg.py`) - 가장 우선순위
+2. **에이전트 설정 파일 작성** (`config/agents/walking_ppo_cfg.py`)
+3. **환경 등록** (`walking/__init__.py`)
+4. **메인 `__init__.py` 업데이트** (`tasks/__init__.py`)
 
 ---
 
@@ -109,7 +111,7 @@
 
 - [x] 목표 속도 추적 보상 추가 ✅
   - [x] `track_lin_vel_xy_exp` 보상 항목 ✅
-  - [x] 가중치: `1.0` ✅
+  - [x] 가중치: `1.5` ✅ (상향 조정됨)
   - [x] 파라미터: `command_name="base_velocity"`, `std=0.5` ✅
 
 - [x] 목표 각속도 추적 보상 추가 ✅
@@ -120,6 +122,19 @@
 - [x] 자세 안정성 보상 추가 ✅
   - [x] `flat_orientation_l2` 보상 항목 ✅
   - [x] 가중치: `-1.0` (페널티) ✅
+  
+- [x] 베이스 높이 보상 추가 ✅
+  - [x] `base_height` 보상 항목 ✅
+  - [x] 함수: `mdp.base_height_l2` ✅
+  - [x] 가중치: `-1.0` (페널티) ✅
+  - [x] 파라미터: `target_height=0.98` ✅
+
+- [x] 위상 기반 보행 보상 추가 ✅ (개선됨)
+  - [x] `gait_phase_tracking` 보상 항목 ✅
+  - [x] 함수: 커스텀 `gait_phase_tracking` 함수 (접촉 힘 기반) ✅
+  - [x] 가중치: `1.0` ✅
+  - [x] 파라미터: `command_name="base_velocity"`, `threshold=1.0` ✅
+  - [x] 교대 보행 패턴 학습을 위한 접촉 힘 기반 위상 추정 구현 ✅
 
 - [x] 발 공중 시간 보상 추가 ✅
   - [x] `feet_air_time` 보상 항목 ✅
@@ -142,7 +157,13 @@
 
 - [x] 관절 가속도 페널티 추가 ✅
   - [x] `dof_acc_l2` 보상 항목 ✅
-  - [x] 가중치: `-1.25e-7` ✅
+  - [x] 가중치: `-2.5e-7` ✅ (떨림 방지를 위해 강화됨)
+
+- [x] 원치 않는 충돌 방지 페널티 추가 ✅
+  - [x] `undesired_contacts` 보상 항목 ✅
+  - [x] 함수: `mdp.undesired_contacts` ✅
+  - [x] 가중치: `-1.0` (페널티) ✅
+  - [x] 파라미터: `sensor_cfg` (허벅지, 종아리, 손, 엉덩이) ✅
 
 **검증 사항**:
 - [x] 모든 보상 항목이 올바르게 정의됨 ✅
@@ -152,10 +173,10 @@
 
 ### 1.4 종료 조건 정의 (`walking/mdp/terminations.py`)
 
-**상태**: ⏳ 진행 중 (파일만 생성됨, 내용 작성 필요)
+**상태**: ✅ 완료됨
 
 - [x] 파일 생성 완료 ✅
-- [ ] 기본 구조 작성
+- [x] 기본 구조 작성 ✅
   ```python
   # Copyright (c) 2025, RL Project Workspace
   # All rights reserved.
@@ -166,39 +187,40 @@
   
   from isaaclab.managers import DoneTermCfg as DoneTerm
   from isaaclab.utils import configclass
+  from isaaclab.managers import SceneEntityCfg
   
   import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
   ```
 
-- [ ] `TerminationsCfg` 클래스 정의
-  - [ ] `@configclass` 데코레이터 추가
+- [x] `TerminationsCfg` 클래스 정의 ✅
+  - [x] `@configclass` 데코레이터 추가 ✅
 
-- [ ] 시간 초과 종료 조건 추가
-  - [ ] `time_out` 항목
-  - [ ] 함수: `mdp.time_out`
-  - [ ] `time_out=True` 설정
+- [x] 시간 초과 종료 조건 추가 ✅
+  - [x] `time_out` 항목 ✅
+  - [x] 함수: `mdp.time_out` ✅
+  - [x] `time_out=True` 설정 ✅
 
-- [ ] 로봇 넘어짐 종료 조건 추가
-  - [ ] `base_contact` 항목
-  - [ ] 함수: `mdp.illegal_contact`
-  - [ ] 파라미터: `sensor_cfg`, `threshold=1.0`
+- [x] 로봇 넘어짐 종료 조건 추가 ✅
+  - [x] `base_contact` 항목 ✅
+  - [x] 함수: `mdp.illegal_contact` ✅
+  - [x] 파라미터: `sensor_cfg` (베이스/토르소 링크), `threshold=1.0` ✅
 
-- [ ] 로봇 떨어짐 종료 조건 추가
-  - [ ] `base_height` 항목
-  - [ ] 함수: `mdp.base_height`
-  - [ ] 파라미터: `minimum_height=0.3`, `maximum_height=2.0`
+- [x] 로봇 떨어짐 종료 조건 추가 ✅
+  - [x] `base_height` 항목 ✅
+  - [x] 함수: `mdp.base_height` ✅
+  - [x] 파라미터: `minimum_height=0.3`, `maximum_height=2.0` ✅
 
 **검증 사항**:
-- [ ] 모든 종료 조건이 올바르게 정의됨
-- [ ] 파라미터 값이 적절함
-- [ ] 코드에 문법 오류 없음
+- [x] 모든 종료 조건이 올바르게 정의됨 ✅
+- [x] 파라미터 값이 적절함 ✅
+- [x] 코드에 문법 오류 없음 ✅ (Linter 경고는 Isaac Lab 미설치로 인한 것으로 정상)
 
 ### 1.5 MDP 모듈 초기화 (`walking/mdp/__init__.py`)
 
-**상태**: ⏳ 진행 중 (기본 구조만 있음, export 추가 필요)
+**상태**: ✅ 완료됨
 
 - [x] 파일 생성 완료 ✅
-- [ ] MDP 모듈에서 필요한 클래스들을 export
+- [x] MDP 모듈에서 필요한 클래스들을 export ✅
   ```python
   from .observations import ObservationsCfg
   from .rewards import RewardsCfg
@@ -208,8 +230,9 @@
   ```
 
 **검증 사항**:
-- [ ] 모든 클래스가 올바르게 import됨
-- [ ] `__all__` 리스트에 모든 클래스 포함
+- [x] 모든 클래스가 올바르게 import됨 ✅
+- [x] `__all__` 리스트에 모든 클래스 포함 ✅
+- [x] 코드에 문법 오류 없음 ✅
 
 ### 1.6 환경 설정 파일 작성 (`walking/walking_env_cfg.py`)
 
@@ -653,9 +676,9 @@
 - **Phase 1**: 기본 보행 환경 구축
   - [x] 1.1 디렉토리 구조 생성 ✅
   - [x] 1.2 관측 공간 정의 ✅ (완료됨)
-  - [x] 1.3 보상 함수 정의 ✅ (완료됨)
-  - [ ] 1.4 종료 조건 정의 ⏳ (파일만 생성됨, 내용 작성 필요)
-  - [ ] 1.5 MDP 모듈 초기화 ⏳ (기본 구조만 있음)
+  - [x] 1.3 보상 함수 정의 ✅ (완료됨 - 위상 기반 보상 포함)
+  - [x] 1.4 종료 조건 정의 ✅ (완료됨)
+  - [x] 1.5 MDP 모듈 초기화 ✅ (완료됨)
   - [ ] 1.6 환경 설정 파일 작성 ⏳ (파일만 생성됨, 내용 작성 필요)
   - [ ] 1.7 에이전트 설정 파일 작성 ⏳ (파일 생성 필요)
   - [ ] 1.8 환경 등록 ⏳ (파일만 생성됨, 내용 작성 필요)
