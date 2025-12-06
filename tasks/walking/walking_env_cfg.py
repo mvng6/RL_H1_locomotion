@@ -3,12 +3,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""기본 보행 환경 설정 파일.
+"""기본 보행 환경 설정 파일 (안전성 강화 버전).
 
-Isaac Lab의 기존 H1RoughEnvCfg를 상속하여 H1 로봇용 보행 환경을 구성합니다.
-H1RoughEnvCfg는 H1 휴머노이드 로봇에 맞게 이미 설정된 환경입니다.
-
-커스텀 보상 함수를 적용하여 자연스러운 보행 패턴을 학습합니다.
+수정 사항:
+1. 커스텀 보상 함수 적용 (관절 한계, 충돌 방지 강화)
+2. 커스텀 종료 조건 적용 (높이, 기울기 체크 강화)
+3. 에피소드 길이 단축 (초기 학습 안정화)
 """
 
 from isaaclab.utils import configclass
@@ -20,73 +20,69 @@ from isaaclab_tasks.manager_based.locomotion.velocity.config.h1.rough_env_cfg im
 )
 
 # 커스텀 MDP 설정 import
-from .mdp import RewardsCfg
+from .mdp import RewardsCfg, TerminationsCfg
 
 
 @configclass
 class WalkingEnvCfg(H1RoughEnvCfg):
-    """H1 로봇을 위한 기본 보행 환경 설정.
+    """H1 로봇을 위한 기본 보행 환경 설정 (안전성 강화).
     
-    Isaac Lab의 H1RoughEnvCfg를 상속하여 필요한 부분만 수정합니다.
-    H1RoughEnvCfg는 이미 H1 로봇의 링크 이름(pelvis 등)에 맞게 설정되어 있습니다.
-    
-    커스텀 보상 함수(RewardsCfg)를 적용하여:
-    - gait_phase_tracking: 교대 보행 패턴 학습
-    - feet_air_time: 발 공중 시간 보상
-    - 기타 안정성 및 규제 보상
+    변경 사항:
+    - 커스텀 보상: 관절 한계, 충돌 방지 페널티 강화
+    - 커스텀 종료: 높이/기울기 체크 강화
+    - 짧은 에피소드: 초기 학습 안정화
     """
 
     # 커스텀 보상 설정 적용
     rewards: RewardsCfg = RewardsCfg()
+    
+    # 커스텀 종료 조건 적용
+    terminations: TerminationsCfg = TerminationsCfg()
 
     def __post_init__(self):
-        """환경 설정 초기화.
-        
-        부모 클래스의 __post_init__을 먼저 호출하여 기본 설정을 적용한 후,
-        기본 보행에 맞게 필요한 부분만 커스터마이징합니다.
-        """
+        """환경 설정 초기화."""
         # 부모 클래스의 기본 설정 적용
         super().__post_init__()
 
         # =====================================================================
-        # 1. 에피소드 설정
+        # 1. 에피소드 설정 - 초기 학습 시 짧게 유지
         # =====================================================================
-        # 보행 학습을 위한 에피소드 길이 (초 단위)
-        self.episode_length_s = 20.0
+        self.episode_length_s = 10.0  # 10초 (안정화 후 20초로 증가 가능)
 
         # =====================================================================
-        # 2. 명령 범위 설정
+        # 2. 명령 범위 설정 - 처음에는 느린 속도로 시작
         # =====================================================================
-        # 기본 보행을 위한 속도 명령 범위 (천천히 걷기)
-        # - lin_vel_x: 전진 속도 (m/s)
-        # - lin_vel_y: 횡방향 속도 (m/s)
-        # - ang_vel_z: 회전 속도 (rad/s)
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)   # 전진: 0~1 m/s
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.5, 0.5)  # 횡방향: -0.5~0.5 m/s
-        self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)  # 회전: -1~1 rad/s
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.5)   # 전진: 0~0.5 m/s (느리게)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.3, 0.3)  # 횡방향: 작게
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.5, 0.5)  # 회전: 작게
+
+        # =====================================================================
+        # 3. 시뮬레이션 설정
+        # =====================================================================
+        # 더 안정적인 물리 시뮬레이션
+        self.sim.dt = 0.005  # 5ms (기본값 유지)
+        self.decimation = 4   # 환경 스텝 = 20ms
 
 
 @configclass
 class WalkingEnvCfg_PLAY(H1RoughEnvCfg_PLAY):
-    """테스트/플레이용 환경 설정.
-    
-    학습된 정책을 테스트하거나 시연할 때 사용합니다.
-    """
+    """테스트/플레이용 환경 설정."""
 
-    # 테스트 시에도 커스텀 보상 설정 적용 (일관성 유지)
+    # 테스트 시에도 동일한 설정 적용
     rewards: RewardsCfg = RewardsCfg()
+    terminations: TerminationsCfg = TerminationsCfg()
 
     def __post_init__(self):
         """테스트용 환경 설정 초기화."""
         super().__post_init__()
 
-        # 테스트 시에는 더 적은 환경 사용 (시각화 용이)
+        # 테스트 시에는 더 적은 환경 사용
         self.scene.num_envs = 50
 
         # 디버그 시각화 활성화
         self.commands.base_velocity.debug_vis = True
 
-        # 명령 범위 설정 (기본 보행)
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.5, 0.5)
-        self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
+        # 테스트용 명령 범위
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.5)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.3, 0.3)
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.5, 0.5)

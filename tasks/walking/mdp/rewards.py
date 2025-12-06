@@ -3,7 +3,14 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""보상 함수 정의 - 기본 보행 태스크 (With Improved Phase-based Reward)."""
+"""보상 함수 정의 - 기본 보행 태스크 (안전성 강화 버전).
+
+문제점 분석 후 수정된 버전:
+1. 관절 한계 페널티 추가 (joint_pos_limits)
+2. 관절 속도 페널티 추가 (joint_vel_l2)
+3. Self-collision 체크 범위 확대
+4. 보상 가중치 재조정
+"""
 
 import torch
 from isaaclab.managers import RewardTermCfg as RewTerm
@@ -13,116 +20,97 @@ from isaaclab.managers import SceneEntityCfg
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
 
-# -------------------------------------------------------------------------
-# [Improved] Contact Force-based Phase Tracking Reward Function
-# -------------------------------------------------------------------------
-def gait_phase_tracking(env, command_name: str, threshold: float = 1.0):
-    """
-    접촉 힘 기반 위상 추정 보상 함수.
-    
-    실제 접촉 힘을 사용하여 각 발의 Swing/Stance 위상을 추정하고,
-    교대 보행 패턴을 보상으로 제공합니다. 이 방식은 보행 속도에 자동으로 적응하며,
-    Isaac Lab의 표준 방식과 일치합니다.
-    
-    Args:
-        env: 강화학습 환경 객체
-        command_name: 명령 이름 (사용하지 않지만 인터페이스 일관성을 위해 유지)
-        threshold: 접촉 힘 임계값 (N). 이 값 이상이면 접촉으로 판단.
-    
-    Returns:
-        torch.Tensor: (num_envs,) 형태의 보상 텐서
-    """
-    # 1. 접촉 센서에서 접촉 힘 가져오기
-    # net_forces_w_history의 형태: (num_envs, history_length, num_bodies, 3)
-    # Z축(인덱스 2)은 수직 힘을 의미합니다.
-    contact_sensor = env.scene["contact_forces"]
-    contact_forces_z = contact_sensor.data.net_forces_w_history[:, 0, :, 2]  # (num_envs, num_feet)
-    
-    # 2. 접촉 상태 판단 (임계값 기반)
-    # 절대값을 사용하여 위/아래 힘 모두 접촉으로 판단
-    in_contact = torch.abs(contact_forces_z) > threshold  # (num_envs, num_feet)
-    
-    # 3. 각 발의 접촉 상태 추출
-    # Isaac Lab은 body_names 리스트 순서대로 데이터를 반환하므로,
-    # 첫 번째 발이 왼발, 두 번째 발이 오른발이라고 가정합니다.
-    # 만약 발이 2개가 아닌 경우를 대비하여 안전하게 처리합니다.
-    if contact_forces_z.shape[1] < 2:
-        # 발이 2개 미만이면 보상을 0으로 반환
-        return torch.zeros(env.num_envs, device=env.device)
-    
-    left_contact = in_contact[:, 0]   # 첫 번째 발 (왼발)
-    right_contact = in_contact[:, 1]  # 두 번째 발 (오른발)
-    
-    # 4. 교대 보행 보상 계산
-    # 목표: 왼발과 오른발이 교대로 접촉
-    # - 왼발이 접촉 중일 때 오른발은 비접촉이어야 함 (Stance-Swing)
-    # - 오른발이 접촉 중일 때 왼발은 비접촉이어야 함 (Swing-Stance)
-    reward_alternating = (
-        (left_contact.float() * (1 - right_contact.float())) +   # 왼발 Stance, 오른발 Swing
-        (right_contact.float() * (1 - left_contact.float()))    # 오른발 Stance, 왼발 Swing
-    )
-    
-    # 5. 동시 접촉/비접촉 페널티
-    # 양발이 동시에 땅에 닿으면 (Double Stance) - 정상적인 보행이지만 교대 보행이 아님
-    # 양발이 동시에 공중에 있으면 (Double Swing) - 위험한 상태
-    penalty_double_contact = (left_contact & right_contact).float()  # 양발 동시 접촉
-    penalty_double_air = (~left_contact & ~right_contact).float()    # 양발 동시 공중
-    
-    # 6. 최종 보상 계산
-    # 교대 보행은 보상, 동시 접촉/비접촉은 페널티
-    total_reward = reward_alternating - 0.5 * (penalty_double_contact + penalty_double_air)
-    
-    return total_reward
-
-
-# -------------------------------------------------------------------------
-# Configuration
-# -------------------------------------------------------------------------
-
 @configclass
 class RewardsCfg:
-    """기본 보행 및 자연스러운 모션을 위한 보상 함수 설정."""
+    """안전하고 자연스러운 보행을 위한 보상 함수 설정.
+    
+    우선순위:
+    1. 안전성 (관절 한계, 충돌 방지) - 가장 중요
+    2. 안정성 (자세 유지, 높이 유지)
+    3. 목표 추적 (속도 명령 따르기)
+    4. 자연스러움 (보행 패턴, 부드러운 움직임)
+    """
 
-    # 1. [필수] 목표 속도 추적 (생존 및 이동)
+    # =========================================================================
+    # 1. [핵심] 목표 속도 추적 - 이것이 학습의 주요 목표
+    # =========================================================================
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=1.5,  # 가중치 상향 (일단 걷는게 중요)
-        params={"command_name": "base_velocity", "std": 0.5},
+        weight=1.0,
+        params={"command_name": "base_velocity", "std": 0.25},
     )
 
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
         weight=0.5,
-        params={"command_name": "base_velocity", "std": 0.5},
+        params={"command_name": "base_velocity", "std": 0.25},
     )
 
-    # 2. [안정성] 자세 유지
+    # =========================================================================
+    # 2. [안전성] 관절 한계 - 신체 관통 방지의 핵심!
+    # =========================================================================
+    # 관절이 한계에 가까워지면 페널티
+    joint_pos_limits = RewTerm(
+        func=mdp.joint_pos_limits,
+        weight=-5.0,  # 강한 페널티로 극단적 자세 방지
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+
+    # 관절 속도 제한 - 급격한 움직임 방지
+    joint_vel_l2 = RewTerm(
+        func=mdp.joint_vel_l2,
+        weight=-0.001,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+
+    # =========================================================================
+    # 3. [안전성] 충돌 방지 - 범위 확대
+    # =========================================================================
+    # 원치 않는 신체 부위 접촉 페널티 (torso, pelvis 추가!)
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-1.0,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=[
+                    ".*torso.*",      # 몸통 (추가!)
+                    ".*pelvis.*",     # 골반 (추가!)
+                    ".*thigh.*",      # 허벅지
+                    ".*calf.*",       # 종아리
+                    ".*hip.*",        # 엉덩이
+                ]
+            ),
+            "threshold": 1.0,
+        },
+    )
+
+    # =========================================================================
+    # 4. [안정성] 자세 유지
+    # =========================================================================
+    # 수평 자세 유지
     flat_orientation_l2 = RewTerm(
         func=mdp.flat_orientation_l2,
-        weight=-1.0,
+        weight=-2.0,  # 가중치 증가
     )
-    
-    base_height = RewTerm(
+
+    # 기본 높이 유지 (H1의 정상 서있는 높이)
+    base_height_l2 = RewTerm(
         func=mdp.base_height_l2,
-        weight=-1.0,
-        params={"target_height": 0.98},  # H1의 적정 허리 높이 확인 필요
+        weight=-0.5,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "target_height": 1.05,  # H1의 정상 서있는 높이 (약 1.05m)
+        },
     )
 
-    # 3. [자연스러움] Phase-based Gait Reward (개선됨)
-    # 접촉 힘 기반 위상 추정을 통해 교대 보행 패턴을 학습합니다.
-    # 이 보상은 보행 속도에 자동으로 적응하며, 실제 접촉 상태를 기반으로 합니다.
-    gait_phase_tracking = RewTerm(
-        func=gait_phase_tracking,  # 위에서 정의한 개선된 함수 사용
-        weight=1.0,
-        params={"command_name": "base_velocity", "threshold": 1.0},  # 접촉 힘 임계값: 1.0N
-    )
-
-    # 4. [자연스러움] 발 클리어런스 및 에어 타임
-    # Phase Reward와 함께 사용하여 발 공중 시간을 보장합니다.
-    # Phase Reward가 교대 보행 패턴을 학습하고, 이 보상은 충분한 클리어런스를 보장합니다.
+    # =========================================================================
+    # 5. [자연스러움] 보행 패턴
+    # =========================================================================
+    # 발 공중 시간 보상 (자연스러운 걸음걸이)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
-        weight=0.5,  # Phase Reward와 함께 사용하므로 적절한 가중치 유지
+        weight=0.25,
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle_link"),
@@ -130,25 +118,45 @@ class RewardsCfg:
         },
     )
 
-    # 5. [규제] 부드러운 움직임 및 에너지 효율
+    # =========================================================================
+    # 6. [규제] 부드러운 움직임 및 에너지 효율
+    # =========================================================================
+    # 액션 변화율 제한 (떨림 방지)
     action_rate_l2 = RewTerm(
         func=mdp.action_rate_l2,
         weight=-0.01,
     )
 
+    # 토크 사용량 제한 (에너지 효율)
+    # 주의: 부모 클래스(H1RoughEnvCfg)가 이 이름을 참조하므로 dof_torques_l2로 유지
     dof_torques_l2 = RewTerm(
         func=mdp.joint_torques_l2,
         weight=-0.0001,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
+    # 관절 가속도 제한 (부드러운 움직임)
+    # 주의: 부모 클래스(H1RoughEnvCfg)가 이 이름을 참조하므로 dof_acc_l2로 유지
     dof_acc_l2 = RewTerm(
         func=mdp.joint_acc_l2,
-        weight=-2.5e-7,  # 떨림 방지를 위해 약간 강화
+        weight=-2.5e-7,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
-    
-    # 6. [안전] 원치 않는 충돌 방지
-    undesired_contacts = RewTerm(
-        func=mdp.undesired_contacts,
-        weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*thigh|.*calf|.*hand|.*hip")},
+
+    # =========================================================================
+    # 7. [생존] 살아있기 보상 (선택적)
+    # =========================================================================
+    # 넘어지지 않고 살아있으면 보상
+    is_alive = RewTerm(
+        func=mdp.is_alive,
+        weight=0.5,
+    )
+
+    # =========================================================================
+    # 8. [페널티] 종료 조건 페널티
+    # =========================================================================
+    # 종료되면 큰 페널티 (넘어짐 등)
+    is_terminated = RewTerm(
+        func=mdp.is_terminated,
+        weight=-10.0,
     )
