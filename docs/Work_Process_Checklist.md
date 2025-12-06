@@ -4,27 +4,29 @@
 
 ## 📊 현재 진행 상황 요약
 
-**전체 진행률**: Phase 1 진행 중 (약 75% 완료 - 코드 작성 완료, 검증 단계)
+**전체 진행률**: Phase 1 진행 중 (약 90% 완료 - 학습 진행 중)
 
 ### ✅ 완료된 작업
 - Phase 1.1: 디렉토리 구조 생성 완료
 - Phase 1.2: 관측 공간 정의 완료 (`observations.py`)
-- Phase 1.3: 보상 함수 정의 완료 (`rewards.py`) - 위상 기반 보상 포함
-- Phase 1.4: 종료 조건 정의 완료 (`terminations.py`)
+- Phase 1.3: 보상 함수 정의 완료 (`rewards.py`) - 안전성 강화 버전
+- Phase 1.4: 종료 조건 정의 완료 (`terminations.py`) - 안전성 강화 버전
 - Phase 1.5: MDP 모듈 초기화 완료 (`mdp/__init__.py`)
 - Phase 1.6: 환경 설정 파일 작성 완료 (`walking_env_cfg.py`)
 - Phase 1.7: 에이전트 설정 파일 작성 완료 (`config/agents/walking_ppo_cfg.py`)
 - Phase 1.8: 환경 등록 완료 (`walking/__init__.py`)
 - Phase 1.9: 메인 `__init__.py` 업데이트 완료 (`tasks/__init__.py`)
+- Phase 1.10: 프로젝트 재설치 및 검증 완료
+- Phase 1.11: Zero Agent 테스트 완료 (커스텀 스크립트 사용)
+- Phase 1.12: 기본 보행 학습 실행 완료 (1차 학습 완료, 2차 안전성 강화 학습 진행 중)
 
 ### ⏳ 진행 중인 작업
-- Phase 1.10: 프로젝트 재설치 및 검증 (다음 단계)
+- Phase 1.12: 안전성 강화 보상 함수로 재학습 진행 중
 
 ### 📝 다음 단계
-1. **프로젝트 재설치 및 검증** - 가장 우선순위
-2. **Zero Agent 테스트**
-3. **기본 보행 학습 실행**
-4. **학습 완료 및 체크포인트 확인**
+1. **학습 완료 후 체크포인트 확인**
+2. **학습된 정책 테스트 (`play_walking.py`)**
+3. **결과 분석 및 보상 함수 튜닝**
 
 ---
 
@@ -34,6 +36,7 @@
 2. [Phase 2: 달리기 (Running) 환경 구축](#phase-2-달리기-running-환경-구축)
 3. [Phase 3: 점프 (Jumping) 환경 구축](#phase-3-점프-jumping-환경-구축)
 4. [최종 검증 및 테스트](#최종-검증-및-테스트)
+5. [발생한 오류 및 해결 방법](#발생한-오류-및-해결-방법)
 
 ---
 
@@ -41,29 +44,9 @@
 
 ### 1.1 디렉토리 구조 생성
 
-- [ ] 작업 디렉토리로 이동
-  ```bash
-  cd /home/ldj/RL_project_ws/exts/h1_locomotion/tasks
-  ```
-
-- [ ] Walking 태스크 디렉토리 생성 확인
-  ```bash
-  # 이미 생성되어 있어야 함:
-  # walking/
-  # walking/mdp/
-  ```
-
-- [x] 필요한 파일들이 모두 존재하는지 확인
-  ```bash
-  ls -la walking/
-  ls -la walking/mdp/
-  ```
-  - [x] `walking/__init__.py` 존재 ✅
-  - [x] `walking/walking_env_cfg.py` 존재 ✅
-  - [x] `walking/mdp/__init__.py` 존재 ✅
-  - [x] `walking/mdp/observations.py` 존재 ✅ (완료됨)
-  - [x] `walking/mdp/rewards.py` 존재 ✅ (파일만 생성됨, 내용 작성 필요)
-  - [x] `walking/mdp/terminations.py` 존재 ✅ (파일만 생성됨, 내용 작성 필요)
+- [x] 작업 디렉토리로 이동 ✅
+- [x] Walking 태스크 디렉토리 생성 확인 ✅
+- [x] 필요한 파일들이 모두 존재하는지 확인 ✅
 
 ### 1.2 관측 공간 정의 (`walking/mdp/observations.py`)
 
@@ -71,748 +54,359 @@
 
 - [x] 파일 생성 완료
 - [x] `ObservationsCfg` 클래스 정의
-- [x] `PolicyCfg` 내부 클래스 정의
-- [x] 관절 상태 관측 항목 추가 (`joint_pos_rel`, `joint_vel_rel`)
-- [x] 베이스 상태 관측 항목 추가 (`base_lin_vel`, `base_ang_vel`, `base_yaw_roll_pitch`)
-- [x] 명령 관측 항목 추가 (`commands`)
-- [x] 발 접촉 상태 관측 항목 추가 (`feet_contact_forces`)
-- [x] 액션 히스토리 관측 항목 추가 (`actions`)
+- [x] 관절 상태, 베이스 상태, 명령, 발 접촉 상태, 액션 히스토리 관측 항목 추가
 - [x] `concatenate_terms = True` 설정
-
-**검증 사항**:
-- [x] 코드에 문법 오류 없음 (IDE에서 확인) ✅
-- [x] 모든 import 문이 올바름 ✅
-- [x] `@configclass` 데코레이터 사용 ✅
-- [x] `__post_init__` 메서드에서 `concatenate_terms = True` 설정 ✅
 
 ### 1.3 보상 함수 정의 (`walking/mdp/rewards.py`)
 
-**상태**: ✅ 완료됨
+**상태**: ✅ 완료됨 (안전성 강화 버전)
 
-- [x] 파일 생성 완료 ✅
-- [x] 기본 구조 작성 ✅
-  ```python
-  # Copyright (c) 2025, RL Project Workspace
-  # All rights reserved.
-  #
-  # SPDX-License-Identifier: BSD-3-Clause
-  
-  """보상 함수 정의 - 기본 보행 태스크."""
-  
-  from isaaclab.managers import RewardTermCfg as RewTerm
-  from isaaclab.utils import configclass
-  
-  import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
-  ```
-
-- [x] `RewardsCfg` 클래스 정의 ✅
-  - [x] `@configclass` 데코레이터 추가 ✅
-
-- [x] 목표 속도 추적 보상 추가 ✅
-  - [x] `track_lin_vel_xy_exp` 보상 항목 ✅
-  - [x] 가중치: `1.5` ✅ (상향 조정됨)
-  - [x] 파라미터: `command_name="base_velocity"`, `std=0.5` ✅
-
-- [x] 목표 각속도 추적 보상 추가 ✅
-  - [x] `track_ang_vel_z_exp` 보상 항목 ✅
-  - [x] 가중치: `0.5` ✅
-  - [x] 파라미터: `command_name="base_velocity"`, `std=0.5` ✅
-
-- [x] 자세 안정성 보상 추가 ✅
-  - [x] `flat_orientation_l2` 보상 항목 ✅
-  - [x] 가중치: `-1.0` (페널티) ✅
-  
-- [x] 베이스 높이 보상 추가 ✅
-  - [x] `base_height` 보상 항목 ✅
-  - [x] 함수: `mdp.base_height_l2` ✅
-  - [x] 가중치: `-1.0` (페널티) ✅
-  - [x] 파라미터: `target_height=0.98` ✅
-
-- [x] 위상 기반 보행 보상 추가 ✅ (개선됨)
-  - [x] `gait_phase_tracking` 보상 항목 ✅
-  - [x] 함수: 커스텀 `gait_phase_tracking` 함수 (접촉 힘 기반) ✅
-  - [x] 가중치: `1.0` ✅
-  - [x] 파라미터: `command_name="base_velocity"`, `threshold=1.0` ✅
-  - [x] 교대 보행 패턴 학습을 위한 접촉 힘 기반 위상 추정 구현 ✅
-
-- [x] 발 공중 시간 보상 추가 ✅
-  - [x] `feet_air_time` 보상 항목 ✅
-  - [x] 함수: `mdp.feet_air_time_positive_biped` ✅
-  - [x] 가중치: `0.5` ✅
-  - [x] 파라미터 설정 확인 ✅ (`command_name`, `sensor_cfg`, `threshold=0.4`)
-
-- [x] 발 미끄러짐 페널티 추가 ✅
-  - [x] `feet_slide` 보상 항목 ✅
-  - [x] 가중치: `-0.5` ✅
-  - [x] 파라미터: `sensor_cfg`, `asset_cfg` ✅
-
-- [x] 액션 변화율 페널티 추가 ✅
-  - [x] `action_rate_l2` 보상 항목 ✅
-  - [x] 가중치: `-0.01` ✅
-
-- [x] 관절 토크 페널티 추가 ✅
-  - [x] `dof_torques_l2` 보상 항목 ✅
-  - [x] 가중치: `-0.0001` ✅
-
-- [x] 관절 가속도 페널티 추가 ✅
-  - [x] `dof_acc_l2` 보상 항목 ✅
-  - [x] 가중치: `-2.5e-7` ✅ (떨림 방지를 위해 강화됨)
-
-- [x] 원치 않는 충돌 방지 페널티 추가 ✅
-  - [x] `undesired_contacts` 보상 항목 ✅
-  - [x] 함수: `mdp.undesired_contacts` ✅
-  - [x] 가중치: `-1.0` (페널티) ✅
-  - [x] 파라미터: `sensor_cfg` (허벅지, 종아리, 손, 엉덩이) ✅
-
-**검증 사항**:
-- [x] 모든 보상 항목이 올바르게 정의됨 ✅
-- [x] 가중치 값이 적절함 ✅
-- [x] 파라미터 설정이 올바름 ✅
-- [x] 코드에 문법 오류 없음 ✅ (Linter 경고는 Isaac Lab 미설치로 인한 것으로 정상)
+**주요 보상 항목**:
+| 항목 | 가중치 | 설명 |
+|------|--------|------|
+| `track_lin_vel_xy_exp` | 1.0 | 목표 속도 추적 |
+| `track_ang_vel_z_exp` | 0.5 | 목표 각속도 추적 |
+| `joint_pos_limits` | -5.0 | ⚠️ 관절 한계 페널티 (핵심!) |
+| `joint_vel_l2` | -0.001 | 관절 속도 페널티 |
+| `undesired_contacts` | -1.0 | 충돌 방지 (torso, pelvis 포함) |
+| `flat_orientation_l2` | -2.0 | 수평 자세 유지 |
+| `base_height_l2` | -0.5 | 기본 높이 유지 |
+| `feet_air_time` | 0.25 | 발 공중 시간 보상 |
+| `action_rate_l2` | -0.01 | 액션 변화율 제한 |
+| `dof_torques_l2` | -0.0001 | 토크 사용량 제한 |
+| `dof_acc_l2` | -2.5e-7 | 가속도 제한 |
+| `is_alive` | 0.5 | 생존 보상 |
+| `is_terminated` | -10.0 | 종료 페널티 |
 
 ### 1.4 종료 조건 정의 (`walking/mdp/terminations.py`)
 
-**상태**: ✅ 완료됨
+**상태**: ✅ 완료됨 (안전성 강화 버전)
 
-- [x] 파일 생성 완료 ✅
-- [x] 기본 구조 작성 ✅
-  ```python
-  # Copyright (c) 2025, RL Project Workspace
-  # All rights reserved.
-  #
-  # SPDX-License-Identifier: BSD-3-Clause
-  
-  """종료 조건 정의 - 기본 보행 태스크."""
-  
-  from isaaclab.managers import DoneTermCfg as DoneTerm
-  from isaaclab.utils import configclass
-  from isaaclab.managers import SceneEntityCfg
-  
-  import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
-  ```
-
-- [x] `TerminationsCfg` 클래스 정의 ✅
-  - [x] `@configclass` 데코레이터 추가 ✅
-
-- [x] 시간 초과 종료 조건 추가 ✅
-  - [x] `time_out` 항목 ✅
-  - [x] 함수: `mdp.time_out` ✅
-  - [x] `time_out=True` 설정 ✅
-
-- [x] 로봇 넘어짐 종료 조건 추가 ✅
-  - [x] `base_contact` 항목 ✅
-  - [x] 함수: `mdp.illegal_contact` ✅
-  - [x] 파라미터: `sensor_cfg` (베이스/토르소 링크), `threshold=1.0` ✅
-
-- [x] 로봇 떨어짐 종료 조건 추가 ✅
-  - [x] `base_height` 항목 ✅
-  - [x] 함수: `mdp.base_height` ✅
-  - [x] 파라미터: `minimum_height=0.3`, `maximum_height=2.0` ✅
-
-**검증 사항**:
-- [x] 모든 종료 조건이 올바르게 정의됨 ✅
-- [x] 파라미터 값이 적절함 ✅
-- [x] 코드에 문법 오류 없음 ✅ (Linter 경고는 Isaac Lab 미설치로 인한 것으로 정상)
+**주요 종료 조건**:
+| 항목 | 설명 |
+|------|------|
+| `time_out` | 에피소드 시간 초과 |
+| `base_contact` | 몸통/골반 접촉 (넘어짐) |
+| `base_height` | 높이 범위 벗어남 (0.5m~1.5m) |
+| `bad_orientation` | 기울기 40도 초과 |
 
 ### 1.5 MDP 모듈 초기화 (`walking/mdp/__init__.py`)
 
 **상태**: ✅ 완료됨
 
-- [x] 파일 생성 완료 ✅
-- [x] MDP 모듈에서 필요한 클래스들을 export ✅
-  ```python
-  from .observations import ObservationsCfg
-  from .rewards import RewardsCfg
-  from .terminations import TerminationsCfg
-  
-  __all__ = ["ObservationsCfg", "RewardsCfg", "TerminationsCfg"]
-  ```
-
-**검증 사항**:
-- [x] 모든 클래스가 올바르게 import됨 ✅
-- [x] `__all__` 리스트에 모든 클래스 포함 ✅
-- [x] 코드에 문법 오류 없음 ✅
-
 ### 1.6 환경 설정 파일 작성 (`walking/walking_env_cfg.py`)
 
 **상태**: ✅ 완료됨
 
-- [x] 파일이 존재하는지 확인 ✅
-- [x] 기본 구조 작성 ✅
-  - [x] Copyright 헤더 ✅
-  - [x] 필요한 import 문들 ✅
-
-- [x] `WalkingSceneCfg` 클래스 작성 ✅
-  - [x] `InteractiveSceneCfg` 상속 ✅
-  - [x] `@configclass` 데코레이터 ✅
-  - [x] 지면 생성 설정 (`ground`) ✅
-  - [x] 조명 설정 (`dome_light`) ✅
-  - [x] H1 로봇 설정 (`robot`) ✅
-  - [x] 접촉 센서 설정 (`contact_forces`) ✅
-
-- [x] `WalkingEnvCfg` 클래스 작성 ✅
-  - [x] `ManagerBasedRLEnvCfg` 상속 ✅
-  - [x] `@configclass` 데코레이터 ✅
-  - [x] 씬 설정 (`scene`) ✅
-  - [x] 관측 설정 (`observations`) ✅
-  - [x] 액션 설정 (`actions`) ✅
-  - [x] 보상 설정 (`rewards`) ✅
-  - [x] 종료 조건 설정 (`terminations`) ✅
-  - [x] 명령 생성 설정 (`commands`) ✅ ← **중요**: `"base_velocity"` 이름으로 정의됨
-  - [x] 이벤트 설정 (`events`) ✅
-  - [x] 에피소드 길이 설정 (`episode_length_s=20.0`) ✅
-  - [x] 시뮬레이션 설정 (`sim`) ✅
-
-**검증 사항**:
-- [x] 모든 설정이 올바르게 정의됨 ✅
-- [x] 명령 범위가 적절함 (`lin_vel_x=(0.0, 1.0)`) ✅
-- [x] 에피소드 길이가 적절함 (`20.0` 초) ✅
-- [x] `commands` 딕셔너리에 `"base_velocity"` 키가 있음 (observations.py와 일치) ✅
-- [x] 코드에 문법 오류 없음 ✅
+- [x] `H1RoughEnvCfg` 상속
+- [x] 커스텀 보상 설정 적용
+- [x] 커스텀 종료 조건 적용
+- [x] 에피소드 길이: 10초
+- [x] 속도 범위: 0~0.5 m/s (안정화용)
 
 ### 1.7 에이전트 설정 파일 작성 (`config/agents/walking_ppo_cfg.py`)
 
 **상태**: ✅ 완료됨
 
-- [x] 디렉토리 확인 ✅
-  ```bash
-  ls -la config/agents/
-  ```
-  - [x] `config/agents/__init__.py` 존재 ✅
-
-- [x] 파일 생성 및 기본 구조 작성 ✅
-  ```python
-  # Copyright (c) 2025, RL Project Workspace
-  # All rights reserved.
-  #
-  # SPDX-License-Identifier: BSD-3-Clause
-  
-  """기본 보행용 PPO 에이전트 설정."""
-  
-  from isaaclab.utils import configclass
-  from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg
-  ```
-
-- [x] `WalkingPPORunnerCfg` 클래스 정의 ✅
-  - [x] `RslRlOnPolicyRunnerCfg` 상속 ✅
-  - [x] `@configclass` 데코레이터 ✅
-
-- [x] 환경 설정 파라미터 추가 ✅
-  - [x] `num_steps_per_env = 24` ✅
-  - [x] `max_iterations = 3000` ✅
-  - [x] `save_interval = 50` ✅
-
-- [x] 실험 설정 파라미터 추가 ✅
-  - [x] `experiment_name = "h1_walking"` ✅
-  - [x] `run_name = ""` ✅
-  - [x] `seed = 42` ✅
-
-- [x] 정책 네트워크 설정 추가 ✅
-  - [x] `policy: RslRlPpoActorCriticCfg` 설정 ✅
-  - [x] `init_noise_std=1.0` ✅
-  - [x] `actor_hidden_dims=[512, 256, 128]` ✅
-  - [x] `critic_hidden_dims=[512, 256, 128]` ✅
-  - [x] `activation="elu"` ✅
-
-- [x] PPO 알고리즘 설정 추가 ✅
-  - [x] `algorithm: RslRlPpoAlgorithmCfg` 설정 ✅
-  - [x] 모든 하이퍼파라미터 설정 확인 ✅
-    - [x] `value_loss_coef=1.0` ✅
-    - [x] `use_clipped_value_loss=True` ✅
-    - [x] `clip_param=0.2` ✅
-    - [x] `entropy_coef=0.01` ✅
-    - [x] `num_learning_epochs=5` ✅
-    - [x] `num_mini_batches=4` ✅
-    - [x] `learning_rate=1.0e-3` ✅
-    - [x] `schedule="adaptive"` ✅
-    - [x] `gamma=0.99` ✅
-    - [x] `lam=0.95` ✅
-    - [x] `desired_kl=0.01` ✅
-    - [x] `max_grad_norm=1.0` ✅
-
-- [x] `config/agents/__init__.py`에 export 추가 ✅
-
-**검증 사항**:
-- [x] 모든 설정이 올바르게 정의됨 ✅
-- [x] 하이퍼파라미터 값이 적절함 ✅
-- [x] 코드에 문법 오류 없음 ✅
-
 ### 1.8 환경 등록 (`walking/__init__.py`)
 
 **상태**: ✅ 완료됨
 
-- [x] 파일이 존재하는지 확인 ✅
-- [x] 기본 구조 작성 ✅
-  - [x] Copyright 헤더 ✅
-  - [x] `gymnasium as gym` import ✅
-
-- [x] 환경 설정 및 에이전트 설정 import ✅
-  ```python
-  from . import walking_env_cfg
-  from ..config.agents import walking_ppo_cfg
-  ```
-
-- [x] Gymnasium 환경 등록 ✅
-  ```python
-  gym.register(
-      id="H1-Walking-v0",
-      entry_point="isaaclab.envs:ManagerBasedRLEnv",
-      disable_env_checker=True,
-      kwargs={
-          "env_cfg_entry_point": walking_env_cfg.WalkingEnvCfg,
-          "rsl_rl_cfg_entry_point": walking_ppo_cfg.WalkingPPORunnerCfg,
-      },
-  )
-  ```
-
-**검증 사항**:
-- [x] 환경 ID가 올바름 (`H1-Walking-v0`) ✅
-- [x] Entry point가 올바름 ✅
-- [x] Config entry point가 올바름 ✅
-- [x] 코드에 문법 오류 없음 ✅
+- [x] `H1-Walking-v0` 환경 등록
 
 ### 1.9 메인 `__init__.py` 업데이트 (`tasks/__init__.py`)
 
 **상태**: ✅ 완료됨
 
-- [x] 파일 확인 ✅
-  ```bash
-  cat tasks/__init__.py
-  ```
-  - [x] 기본 구조 존재 (Copyright 헤더, 주석) ✅
-
-- [x] Walking 태스크 import 추가 ✅
-  ```python
-  from . import walking
-  ```
-
-- [x] 다른 태스크 import는 주석 처리 (아직 구현 전) ✅
-  ```python
-  # from . import running
-  # from . import jumping
-  ```
-
-**검증 사항**:
-- [x] Walking 태스크가 올바르게 import됨 ✅
-- [x] 다른 태스크는 주석 처리됨 ✅
-- [x] 코드에 문법 오류 없음 ✅
-
 ### 1.10 프로젝트 재설치 및 검증
 
-**상태**: ⏳ 다음 단계
+**상태**: ✅ 완료됨
 
-**중요**: Isaac Lab이 외부 의존성으로 사용되는 경우, Isaac Lab의 Python 환경을 사용하여 설치해야 합니다.
-
-#### 방법 1: Isaac Lab의 `isaaclab.sh` 사용 (권장)
-
-- [ ] Isaac Lab 경로 확인
-  ```bash
-  # Isaac Lab이 설치된 경로 확인
-  # 예: /home/ldj/IsaacLab 또는 /path/to/IsaacLab
-  echo $ISAAC_LAB_PATH  # 환경 변수가 설정되어 있는지 확인
-  ```
-
-- [ ] 프로젝트 디렉토리로 이동
-  ```bash
-  cd /home/ldj/RL_project_ws
-  ```
-
-- [ ] 프로젝트 재설치
-  ```bash
-  # 방법 1-A: Isaac Lab 경로를 직접 지정
-  /path/to/IsaacLab/isaaclab.sh -p -m pip install -e exts/h1_locomotion --force-reinstall
-  
-  # 방법 1-B: 환경 변수 사용 (ISAAC_LAB_PATH가 설정된 경우)
-  $ISAAC_LAB_PATH/isaaclab.sh -p -m pip install -e exts/h1_locomotion --force-reinstall
-  
-  # 방법 1-C: 상대 경로 사용 (현재 디렉토리가 Isaac Lab인 경우)
-  # cd /path/to/IsaacLab
-  # ./isaaclab.sh -p -m pip install -e /home/ldj/RL_project_ws/exts/h1_locomotion --force-reinstall
-  ```
-
-#### 방법 2: PYTHONPATH 설정 후 일반 pip 사용
-
-- [ ] Isaac Lab의 Python 경로 확인
-  ```bash
-  # Isaac Lab의 Python 경로 확인
-  /path/to/IsaacLab/isaaclab.sh -p -c "import sys; print(sys.executable)"
-  ```
-
-- [ ] PYTHONPATH 설정
-  ```bash
-  # Isaac Lab의 Python 경로를 PYTHONPATH에 추가
-  export PYTHONPATH="/path/to/IsaacLab/source:$PYTHONPATH"
-  ```
-
-- [ ] 프로젝트 설치
-  ```bash
-  cd /home/ldj/RL_project_ws/exts/h1_locomotion
-  /path/to/IsaacLab/isaaclab.sh -p -m pip install -e . --force-reinstall
-  ```
-
-#### 설치 성공 확인
-
-- [x] 설치 성공 확인 ✅
-  ```bash
-  # 설치 후 출력 확인
-  # "Successfully installed h1-locomotion" 메시지가 나타남 ✅
-  # 패키지가 설치되었지만, conda 환경에서 테스트 필요
-  ```
-
-**⚠️ 중요**: 일반 Python 환경이 아닌 **conda 환경(`env_isaaclab`) 또는 Isaac Lab의 Python 환경**에서 테스트해야 합니다.
-
-- [ ] 환경 등록 확인
-  ```bash
-  # 방법 1: Isaac Lab의 list_envs.py 사용
-  /path/to/IsaacLab/isaaclab.sh -p scripts/environments/list_envs.py | grep H1
-  
-  # 방법 2: Python에서 직접 확인
-  /path/to/IsaacLab/isaaclab.sh -p -c "import gymnasium as gym; print([env for env in gym.envs.registry.env_specs.keys() if 'H1' in env])"
-  ```
-  - [ ] `H1-Walking-v0` 환경이 목록에 나타남
-
-- [ ] Import 테스트
-  ```bash
-  # Python에서 직접 import 테스트
-  /path/to/IsaacLab/isaaclab.sh -p -c "
-  from h1_locomotion.tasks.walking import walking_env_cfg
-  from h1_locomotion.config.agents import walking_ppo_cfg
-  import gymnasium as gym
-  print('Import 성공!')
-  print('환경 등록 확인:', 'H1-Walking-v0' in gym.envs.registry.env_specs)
-  "
-  ```
-
-**검증 사항**:
-- [ ] 프로젝트가 올바르게 설치됨
-- [ ] 환경이 올바르게 등록됨 (`H1-Walking-v0` 확인)
-- [ ] Import 오류 없음
-- [ ] 모든 모듈이 올바르게 로드됨
+- [x] `pip install -e exts/h1_locomotion` 성공
+- [x] Import 테스트 성공
+- [x] 환경 등록 확인
 
 ### 1.11 Zero Agent 테스트
 
-- [ ] Zero Agent 테스트 실행
-  ```bash
-  /path/to/IsaacLab/isaaclab.sh -p scripts/environments/zero_agent.py \
-      --task H1-Walking-v0 \
-      --num_envs 4
-  ```
+**상태**: ✅ 완료됨 (커스텀 스크립트 사용)
 
-- [ ] 테스트 결과 확인
-  - [ ] 환경이 정상적으로 로드됨
-  - [ ] 시뮬레이션이 실행됨
-  - [ ] 에러 없이 종료됨
-
-**검증 사항**:
-- [ ] 환경이 올바르게 작동함
-- [ ] 씬이 올바르게 생성됨
-- [ ] 로봇이 올바르게 스폰됨
+- [x] `test_walking_env.py` 스크립트 생성
+- [x] 환경 생성 및 실행 확인
+- [x] 100 스텝 테스트 성공
 
 ### 1.12 기본 보행 학습 실행
 
-- [ ] 학습 디렉토리 확인
-  ```bash
-  mkdir -p logs/rsl_rl
-  ```
+**상태**: ⏳ 진행 중 (2차 학습)
 
-- [ ] 학습 명령어 준비
-  ```bash
-  /path/to/IsaacLab/isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
-      --task H1-Walking-v0 \
-      --num_envs 4096 \
-      --max_iterations 3000 \
-      --experiment_name h1_walking
-  ```
+**1차 학습 결과** (문제 발생):
+- 평균 보상: 0.023 (매우 낮음)
+- 문제: 비정상적 자세, 신체 관통
+- 원인: 안전성 보상 부족
 
-- [ ] GPU 메모리 확인
-  ```bash
-  nvidia-smi
-  ```
-  - [ ] 충분한 GPU 메모리 확인 (최소 8GB 권장)
+**2차 학습** (안전성 강화):
+- [x] 보상 함수 수정 완료
+- [x] 종료 조건 강화 완료
+- [ ] 학습 진행 중
 
-- [ ] 학습 시작
-  - [ ] 학습이 정상적으로 시작됨
-  - [ ] 로그가 올바르게 출력됨
-  - [ ] 체크포인트가 저장됨
-
-- [ ] 학습 모니터링
-  - [ ] TensorBoard 실행 (선택사항)
-  - [ ] 학습 진행 상황 확인
-  - [ ] 보상이 증가하는지 확인
-
-**검증 사항**:
-- [ ] 학습이 정상적으로 진행됨
-- [ ] 체크포인트가 주기적으로 저장됨
-- [ ] 학습이 완료됨 (3000 iterations)
+**학습 명령어**:
+```bash
+/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking.py \
+    --task H1-Walking-v0 --num_envs 4096 --max_iterations 3000 --headless
+```
 
 ### 1.13 학습 완료 및 체크포인트 확인
 
-- [ ] 학습 완료 확인
-  - [ ] 최종 iteration까지 학습 완료
-  - [ ] 에러 없이 종료됨
+**상태**: ⏳ 대기 중
 
 - [ ] 체크포인트 파일 확인
   ```bash
-  ls -lh logs/rsl_rl/h1_walking/YYYY-MM-DD_HH-MM-SS/model_*.pt
+  ls -lh logs/rsl_rl/h1_walking/*/model_*.pt
   ```
-  - [ ] `model_0.pt` 존재
-  - [ ] `model_50.pt` 존재 (50 iteration마다 저장)
-  - [ ] `model_3000.pt` 존재 (최종 모델)
-
-- [ ] 학습 로그 확인
-  ```bash
-  ls -lh logs/rsl_rl/h1_walking/YYYY-MM-DD_HH-MM-SS/
-  ```
-  - [ ] `progress.csv` 존재
-  - [ ] `params/env.yaml` 존재
-  - [ ] `params/agent.yaml` 존재
-
-**검증 사항**:
-- [ ] 모든 체크포인트가 올바르게 저장됨
-- [ ] 학습 로그가 올바르게 기록됨
-- [ ] 최종 모델이 존재함
 
 ### 1.14 학습된 정책 테스트
 
-- [ ] Play 스크립트로 테스트
-  ```bash
-  /path/to/IsaacLab/isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/play.py \
-      --task H1-Walking-v0 \
-      --checkpoint logs/rsl_rl/h1_walking/YYYY-MM-DD_HH-MM-SS/model_3000.pt \
-      --video
-  ```
+**상태**: ⏳ 대기 중
 
-- [ ] 테스트 결과 확인
-  - [ ] 로봇이 안정적으로 걷는지 확인
-  - [ ] 비디오가 생성됨 (선택사항)
-  - [ ] 에러 없이 실행됨
-
-**검증 사항**:
-- [ ] 학습된 정책이 올바르게 동작함
-- [ ] 로봇이 목표 속도를 추적함
-- [ ] 안정적인 보행 패턴 확인
+**테스트 명령어**:
+```bash
+/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking.py \
+    --task H1-Walking-v0 --num_envs 16 \
+    --checkpoint /path/to/model_3000.pt
+```
 
 ---
 
 ## Phase 2: 달리기 (Running) 환경 구축
 
-### 2.1 디렉토리 구조 생성
-
-- [ ] Running 태스크 디렉토리 생성
-  ```bash
-  cd /home/ldj/RL_project_ws/exts/h1_locomotion/tasks
-  mkdir -p running/mdp
-  touch running/__init__.py
-  touch running/running_env_cfg.py
-  touch running/mdp/__init__.py
-  touch running/mdp/observations.py
-  touch running/mdp/rewards.py
-  touch running/mdp/terminations.py
-  ```
-
-### 2.2 달리기 환경 설정 파일 작성
-
-- [ ] `running/running_env_cfg.py` 작성
-  - [ ] `WalkingEnvCfg` 상속
-  - [ ] 속도 범위 수정 (`lin_vel_x=(1.5, 3.0)`)
-  - [ ] 보상 가중치 조정
-  - [ ] 에피소드 길이 조정 (`30.0` 초)
-
-### 2.3 달리기 보상 함수 작성
-
-- [ ] `running/mdp/rewards.py` 작성
-  - [ ] `WalkingRewardsCfg` 상속
-  - [ ] `__post_init__`에서 가중치 조정
-  - [ ] 속도 추적 보상 가중치 증가 (`2.0`)
-  - [ ] 발 공중 시간 보상 증가 (`0.8`)
-
-### 2.4 관측 및 종료 조건 (보행과 동일)
-
-- [ ] `running/mdp/observations.py` 작성
-  - [ ] `walking.mdp.observations`에서 import
-
-- [ ] `running/mdp/terminations.py` 작성
-  - [ ] `walking.mdp.terminations`에서 import
-
-### 2.5 달리기 에이전트 설정 작성
-
-- [ ] `config/agents/running_ppo_cfg.py` 작성
-  - [ ] `WalkingPPORunnerCfg` 상속
-  - [ ] `experiment_name = "h1_running"`
-  - [ ] 학습률 조정 (`5.0e-4`)
-
-### 2.6 환경 등록
-
-- [ ] `running/__init__.py` 작성
-  - [ ] Gymnasium 환경 등록 (`H1-Running-v0`)
-
-### 2.7 메인 `__init__.py` 업데이트
-
-- [ ] `tasks/__init__.py` 업데이트
-  - [ ] Running 태스크 import 추가
-
-### 2.8 프로젝트 재설치 및 검증
-
-- [ ] 프로젝트 재설치
-- [ ] 환경 등록 확인 (`H1-Running-v0`)
-- [ ] Zero Agent 테스트
-
-### 2.9 전이학습으로 달리기 학습 실행
-
-- [ ] 보행 정책 체크포인트 경로 확인
-- [ ] 전이학습 명령어 실행
-  ```bash
-  --resume \
-  --load_run <보행_타임스탬프> \
-  --checkpoint model_3000.pt
-  ```
-- [ ] 학습 완료 및 체크포인트 확인
+**상태**: ⏳ 아직 시작하지 않음
 
 ---
 
 ## Phase 3: 점프 (Jumping) 환경 구축
 
-### 3.1 디렉토리 구조 생성
-
-- [ ] Jumping 태스크 디렉토리 생성
-  ```bash
-  mkdir -p jumping/mdp
-  ```
-
-### 3.2 점프 환경 설정 파일 작성
-
-- [ ] `jumping/jumping_env_cfg.py` 작성
-  - [ ] 명령 없음 (`commands: dict = {}`)
-  - [ ] 짧은 에피소드 길이 (`5.0` 초)
-
-### 3.3 점프 관측 공간 정의
-
-- [ ] `jumping/mdp/observations.py` 작성
-  - [ ] 베이스 높이 관측 추가
-  - [ ] 명령 관측 제거
-
-### 3.4 점프 보상 함수 작성
-
-- [ ] `jumping/mdp/rewards.py` 작성
-  - [ ] 점프 높이 보상 함수 구현
-  - [ ] 목표 높이: `0.5m`
-
-### 3.5 점프 종료 조건 작성
-
-- [ ] `jumping/mdp/terminations.py` 작성
-  - [ ] 보행과 유사한 종료 조건
-
-### 3.6 점프 에이전트 설정 및 환경 등록
-
-- [ ] `config/agents/jumping_ppo_cfg.py` 작성
-- [ ] `jumping/__init__.py` 작성
-- [ ] `tasks/__init__.py` 업데이트
-
-### 3.7 전이학습으로 점프 학습 실행
-
-- [ ] 보행/달리기 정책 체크포인트 확인
-- [ ] 전이학습 명령어 실행
-- [ ] 학습 완료 및 체크포인트 확인
+**상태**: ⏳ 아직 시작하지 않음
 
 ---
 
 ## 최종 검증 및 테스트
 
-### 모든 환경 등록 확인
-
-- [ ] 모든 환경이 올바르게 등록됨
-  ```bash
-  /path/to/IsaacLab/isaaclab.sh -p scripts/environments/list_envs.py | grep H1
-  ```
-  - [ ] `H1-Walking-v0` 존재
-  - [ ] `H1-Running-v0` 존재
-  - [ ] `H1-Jumping-v0` 존재
-
-### 각 태스크 정책 테스트
-
-- [ ] 보행 정책 테스트
-- [ ] 달리기 정책 테스트
-- [ ] 점프 정책 테스트
-
-### 전이학습 효과 검증
-
-- [ ] 달리기 학습이 보행에서 시작했을 때 더 빠르게 수렴하는지 확인
-- [ ] 점프 학습이 보행/달리기에서 시작했을 때 더 빠르게 수렴하는지 확인
-
-### 문서화 완료
-
-- [ ] 코드 주석 작성 완료
-- [ ] README 파일 업데이트 (선택사항)
-- [ ] 학습 결과 정리 (선택사항)
+**상태**: ⏳ 아직 시작하지 않음
 
 ---
 
-## 진행 상황 추적
+## 발생한 오류 및 해결 방법
 
-### 현재 진행 단계
+이 섹션은 개발 과정에서 발생한 주요 오류들과 해결 방법을 정리한 것입니다. 동일한 실수를 반복하지 않도록 참고하세요.
 
-- **Phase 1**: 기본 보행 환경 구축
-  - [x] 1.1 디렉토리 구조 생성 ✅
-  - [x] 1.2 관측 공간 정의 ✅ (완료됨)
-  - [x] 1.3 보상 함수 정의 ✅ (완료됨 - 위상 기반 보상 포함)
-  - [x] 1.4 종료 조건 정의 ✅ (완료됨)
-  - [x] 1.5 MDP 모듈 초기화 ✅ (완료됨)
-  - [x] 1.6 환경 설정 파일 작성 ✅ (완료됨)
-  - [x] 1.7 에이전트 설정 파일 작성 ✅ (완료됨)
-  - [x] 1.8 환경 등록 ✅ (완료됨)
-  - [x] 1.9 메인 `__init__.py` 업데이트 ✅ (완료됨)
-  - [ ] 1.10 프로젝트 재설치 및 검증
-  - [ ] 1.11 Zero Agent 테스트
-  - [ ] 1.12 기본 보행 학습 실행
-  - [ ] 1.13 학습 완료 및 체크포인트 확인
-  - [ ] 1.14 학습된 정책 테스트
+### 1. RslRlVecEnvWrapper의 `clip_actions` 파라미터 오류
 
-- **Phase 2**: 달리기 환경 구축
-  - [ ] 아직 시작하지 않음
+**오류 메시지**:
+```
+ValueError: Box high must be a np.ndarray, integer, or float, actual type=<class 'bool'>
+```
 
-- **Phase 3**: 점프 환경 구축
-  - [ ] 아직 시작하지 않음
+**원인**:
+- `RslRlVecEnvWrapper(env, clip_actions=True)` 호출 시 발생
+- 최신 Gymnasium 버전에서 `Box` 공간의 `high` 파라미터에 boolean 값이 전달됨
+
+**해결 방법**:
+```python
+# ❌ 잘못된 코드
+env = RslRlVecEnvWrapper(env, clip_actions=True)
+
+# ✅ 올바른 코드
+env = RslRlVecEnvWrapper(env)  # clip_actions 파라미터 제거
+```
 
 ---
 
-## 참고 사항
+### 2. Hydra 데코레이터와 argparse 충돌
 
-### 각 단계 완료 후 확인할 사항
+**오류 메시지**:
+```
+error: unrecognized arguments: --task --num_envs 4096 --max_iterations 3000
+```
 
-1. **코드 작성 후**:
-   - [ ] 문법 오류 없음
-   - [ ] Import 경로 올바름
-   - [ ] 설정 값이 적절함
+**원인**:
+- `@hydra_task_config` 데코레이터가 Hydra의 argument parser를 사용
+- 기존 argparse와 충돌 발생
 
-2. **파일 생성 후**:
-   - [ ] 파일이 올바른 위치에 있음
-   - [ ] 파일 권한이 올바름
+**해결 방법**:
+- Hydra 데코레이터 제거하고 직접 설정 로드
+```python
+# ❌ Hydra 데코레이터 사용 (충돌 발생)
+@hydra_task_config(args_cli.task, "rsl_rl_cfg_entry_point")
+def main(env_cfg, agent_cfg):
+    ...
 
-3. **환경 등록 후**:
-   - [ ] 환경이 목록에 나타남
-   - [ ] Import 오류 없음
-
-4. **학습 시작 전**:
-   - [ ] GPU 메모리 충분함
-   - [ ] 디스크 공간 충분함
-   - [ ] 학습 명령어가 올바름
-
-5. **학습 완료 후**:
-   - [ ] 체크포인트 파일 존재
-   - [ ] 학습 로그 존재
-   - [ ] 정책이 올바르게 동작함
-
-### 문제 발생 시 확인 사항
-
-- [ ] 에러 메시지 확인
-- [ ] 로그 파일 확인
-- [ ] 관련 문서 참조
-- [ ] 예제 코드와 비교
+# ✅ 직접 설정 로드
+def main():
+    env_cfg = parse_env_cfg(args_cli.task, ...)
+    gym_registry = gym.envs.registry.get(args_cli.task)
+    agent_cfg_entry_point = gym_registry.kwargs.get("rsl_rl_cfg_entry_point")
+    # ... 동적 import
+```
 
 ---
 
-**작성일**: 2025-01-15  
+### 3. `get_observations()` 반환값 언패킹 오류
+
+**오류 메시지**:
+```
+ValueError: too many values to unpack (expected 2)
+```
+
+**원인**:
+- `RslRlVecEnvWrapper.get_observations()` 메서드의 반환값 개수가 예상과 다름
+
+**해결 방법**:
+```python
+# ❌ 잘못된 코드
+obs, _ = env.get_observations()
+
+# ✅ 올바른 코드
+obs = env.get_observations()
+if isinstance(obs, tuple):
+    obs = obs[0]
+```
+
+---
+
+### 4. 부모 클래스가 참조하는 보상 이름 불일치
+
+**오류 메시지**:
+```
+AttributeError: 'RewardsCfg' object has no attribute 'dof_torques_l2'. Did you mean: 'joint_torques_l2'?
+```
+
+**원인**:
+- `H1RoughEnvCfg.__post_init__`에서 특정 보상 이름을 참조
+- 커스텀 `RewardsCfg`에서 다른 이름 사용
+
+**부모 클래스가 참조하는 이름**:
+```python
+# H1RoughEnvCfg.__post_init__에서 참조하는 이름들
+self.rewards.undesired_contacts = None
+self.rewards.flat_orientation_l2.weight = -1.0
+self.rewards.dof_torques_l2.weight = 0.0      # ← 이 이름 필수!
+self.rewards.action_rate_l2.weight = -0.005
+self.rewards.dof_acc_l2.weight = -1.25e-7     # ← 이 이름 필수!
+```
+
+**해결 방법**:
+```python
+# ❌ 잘못된 이름
+joint_torques_l2 = RewTerm(...)
+joint_acc_l2 = RewTerm(...)
+
+# ✅ 부모 클래스와 일치하는 이름
+dof_torques_l2 = RewTerm(...)  # 이름 변경!
+dof_acc_l2 = RewTerm(...)      # 이름 변경!
+```
+
+---
+
+### 5. SceneEntityCfg 속성 이름 오류
+
+**오류 메시지**:
+```
+AttributeError: 'SceneEntityCfg' object has no attribute 'asset_name'
+```
+
+**원인**:
+- `SceneEntityCfg`는 `asset_name`이 아닌 `name` 속성을 사용
+
+**해결 방법**:
+```python
+# ❌ 잘못된 코드
+root_pos_w = env.scene[asset_cfg.asset_name].data.root_pos_w
+
+# ✅ 올바른 코드
+root_pos_w = env.scene[asset_cfg.name].data.root_pos_w
+```
+
+---
+
+### 6. 학습 결과 비정상 (신체 관통, 비정상 자세)
+
+**증상**:
+- 평균 보상이 매우 낮음 (0.023)
+- 로봇 신체 부위가 서로 관통
+- 관절이 비정상적으로 꺾임
+
+**원인 분석**:
+| 문제점 | 설명 |
+|--------|------|
+| 관절 한계 페널티 없음 | 관절이 물리적 한계를 초과해도 페널티 없음 |
+| Self-collision 체크 부족 | `undesired_contacts`가 torso, pelvis 미포함 |
+| 관절 속도 페널티 없음 | 급격한 움직임에 제한 없음 |
+| 부모 클래스 보상 덮어쓰기 | Isaac Lab의 검증된 보상이 손실됨 |
+
+**해결 방법**:
+```python
+@configclass
+class RewardsCfg:
+    # 1. 관절 한계 페널티 추가 (핵심!)
+    joint_pos_limits = RewTerm(
+        func=mdp.joint_pos_limits,
+        weight=-5.0,  # 강한 페널티
+    )
+    
+    # 2. 관절 속도 페널티 추가
+    joint_vel_l2 = RewTerm(
+        func=mdp.joint_vel_l2,
+        weight=-0.001,
+    )
+    
+    # 3. 충돌 감지 범위 확대
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=[".*torso.*", ".*pelvis.*", ".*thigh.*", ".*calf.*", ".*hip.*"]
+            ),
+        },
+    )
+    
+    # 4. 생존/종료 보상 추가
+    is_alive = RewTerm(func=mdp.is_alive, weight=0.5)
+    is_terminated = RewTerm(func=mdp.is_terminated, weight=-10.0)
+```
+
+---
+
+### 7. 커스텀 환경이 Isaac Lab 스크립트에서 인식되지 않음
+
+**증상**:
+- `zero_agent.py` 실행 시 `H1-Walking-v0` 환경을 찾을 수 없음
+- `train.py` 실행 시 환경 등록 오류
+
+**원인**:
+- Isaac Lab의 기본 스크립트는 커스텀 확장 패키지를 자동으로 import하지 않음
+
+**해결 방법**:
+- 커스텀 스크립트 작성하여 명시적으로 import
+```python
+# 필수! 환경 등록을 위해 명시적 import
+import h1_locomotion.tasks  # noqa: F401
+
+# 이후 환경 사용
+env = gym.make("H1-Walking-v0", cfg=env_cfg)
+```
+
+---
+
+### 요약: 주의해야 할 핵심 사항
+
+1. **부모 클래스 상속 시**: 부모 클래스의 `__post_init__`에서 참조하는 속성 이름을 반드시 확인
+2. **SceneEntityCfg 사용 시**: `name` 속성 사용 (`asset_name` 아님)
+3. **RSL-RL Wrapper 사용 시**: `clip_actions` 파라미터 사용 주의
+4. **커스텀 환경 사용 시**: 반드시 `import h1_locomotion.tasks` 명시
+5. **보상 함수 설계 시**: 안전성 관련 페널티 (관절 한계, 충돌 방지) 반드시 포함
+
+---
+
+**최종 업데이트**: 2025-12-06  
 **작성자**: AI Assistant  
-**버전**: 1.0  
-**기반 문서**: `H1_Custom_Action_RL_Development_Guide.md`
-
+**버전**: 2.0
