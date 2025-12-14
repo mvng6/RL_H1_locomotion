@@ -25,7 +25,7 @@
 
 ### 📝 다음 단계
 1. **학습 완료 후 체크포인트 확인**
-2. **학습된 정책 테스트 (`play_walking.py`)**
+2. **학습된 정책 테스트 (`play_walking_ppo.py`)**
 3. **결과 분석 및 보상 함수 튜닝**
 
 ---
@@ -150,7 +150,7 @@
 
 **학습 명령어**:
 ```bash
-/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking.py \
+/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking_ppo.py \
     --task H1-Walking-v0 --num_envs 4096 --max_iterations 3000 --headless
 ```
 
@@ -169,7 +169,7 @@
 
 **테스트 명령어**:
 ```bash
-/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking.py \
+/home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking_ppo.py \
     --task H1-Walking-v0 --num_envs 16 \
     --checkpoint /path/to/model_3000.pt
 ```

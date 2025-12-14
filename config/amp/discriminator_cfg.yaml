@@ -1,0 +1,14 @@
+# Discriminator 네트워크 설정
+
+discriminator:
+  # 네트워크 구조
+  hidden_dims: [512, 512, 256]
+  activation: "elu"
+  
+  # 입력 차원 (State transition: [s_t, s_{t+1}])
+  state_dim: 211
+  
+  # 학습 설정
+  learning_rate: 3e-4
+  weight_decay: 1e-5
+

@@ -398,13 +398,13 @@ $ISAAC_LAB_PATH/isaaclab.sh -p -m pip show h1_locomotion
 echo "[5/5] Import 테스트 중..."
 $ISAAC_LAB_PATH/isaaclab.sh -p -c "
 try:
-    from h1_locomotion.tasks.walking import walking_env_cfg
-    from h1_locomotion.config.agents import walking_ppo_cfg
-    import gymnasium as gym
-    from h1_locomotion.tasks import walking
-    envs = [env for env in gym.envs.registry.env_specs.keys() if 'H1' in env]
-    print('✅ 모든 테스트 통과!')
-    print('등록된 환경:', envs)
+from h1_locomotion.tasks.walking import walking_env_cfg
+from h1_locomotion.config.agents import walking_ppo_cfg
+import gymnasium as gym
+from h1_locomotion.tasks import walking
+envs = [env for env in gym.envs.registry.env_specs.keys() if 'H1' in env]
+print('✅ 모든 테스트 통과!')
+print('등록된 환경:', envs)
     if 'H1-Walking-v0' in envs:
         print('✅ 환경 등록 성공!')
     else:

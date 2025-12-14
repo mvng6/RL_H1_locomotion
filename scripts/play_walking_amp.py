@@ -3,20 +3,20 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""H1 Walking 학습된 정책 테스트 스크립트.
+"""H1 Walking AMP 학습된 정책 테스트 스크립트.
 
-학습된 모델을 로드하여 시각화 및 평가를 수행합니다.
+AMP 알고리즘으로 학습된 모델을 로드하여 시각화 및 평가를 수행합니다.
 
 사용법:
     # 최신 체크포인트 테스트 (GUI 모드)
-    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking.py \
-        --task H1-Walking-v0 \
+    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking_amp.py \
+        --task H1-Walking-AMP-v0 \
         --num_envs 16 \
-        --checkpoint /home/ldj/RL_project_ws/exts/h1_locomotion/logs/rsl_rl/h1_walking/<timestamp>/model_3000.pt
+        --checkpoint /home/ldj/RL_project_ws/exts/h1_locomotion/logs/rsl_rl/h1_walking_amp/<timestamp>/model_5000.pt
 
     # 특정 체크포인트 테스트
-    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking.py \
-        --task H1-Walking-v0 \
+    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/play_walking_amp.py \
+        --task H1-Walking-AMP-v0 \
         --num_envs 16 \
         --checkpoint /path/to/model_XXXX.pt
 """
@@ -24,14 +24,17 @@
 """Launch Isaac Sim Simulator first."""
 
 import argparse
+import os
 
 from isaaclab.app import AppLauncher
 
 # argparse 설정
-parser = argparse.ArgumentParser(description="Play trained H1-Walking-v0 policy.")
+parser = argparse.ArgumentParser(description="Play trained H1-Walking-AMP-v0 policy.")
 parser.add_argument("--num_envs", type=int, default=16, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default="H1-Walking-v0", help="Name of the task.")
+parser.add_argument("--task", type=str, default="H1-Walking-AMP-v0", help="Name of the task.")
 parser.add_argument("--checkpoint", type=str, required=True, help="Path to model checkpoint (.pt file).")
+parser.add_argument("--discriminator_checkpoint", type=str, default=None,
+                   help="Path to discriminator checkpoint (.pt file, optional)")
 parser.add_argument("--num_steps", type=int, default=1000, help="Number of steps to run.")
 
 # AppLauncher cli args 추가
@@ -45,7 +48,6 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import gymnasium as gym
-import os
 import torch
 
 # RSL-RL imports
@@ -64,7 +66,7 @@ from isaaclab_tasks.utils import parse_env_cfg
 
 
 def main():
-    """학습된 정책으로 H1 Walking 환경 테스트."""
+    """학습된 AMP 정책으로 H1 Walking 환경 테스트."""
     
     # 체크포인트 경로 확인
     if not os.path.exists(args_cli.checkpoint):
@@ -109,6 +111,18 @@ def main():
     # 체크포인트 로드
     print(f"[INFO] Loading trained policy from: {args_cli.checkpoint}")
     runner.load(args_cli.checkpoint)
+    
+    # Discriminator 체크포인트 로드 (있는 경우)
+    if args_cli.discriminator_checkpoint is None:
+        # 자동으로 찾기
+        disc_checkpoint = args_cli.checkpoint.replace("model_", "discriminator_")
+        if os.path.exists(disc_checkpoint):
+            args_cli.discriminator_checkpoint = disc_checkpoint
+    
+    if args_cli.discriminator_checkpoint and os.path.exists(args_cli.discriminator_checkpoint):
+        print(f"[INFO] Loading discriminator from: {args_cli.discriminator_checkpoint}")
+        # Discriminator는 테스트 시에는 필요 없을 수 있음 (Style reward 계산용)
+        # 필요시 여기서 로드 가능
     
     # 정책 가져오기
     policy = runner.get_inference_policy(device=env.unwrapped.device)

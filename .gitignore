@@ -20,3 +20,7 @@ build/
 logs/
 runs/
 output/
+
+# Data directories (large files)
+data/amass/
+data/processed/retargeted_motions/data/mapping/SMPL_python_v.1.1.0/

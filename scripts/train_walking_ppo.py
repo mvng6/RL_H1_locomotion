@@ -9,11 +9,11 @@
 
 사용법:
     # GUI 모드
-    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking.py \
+    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking_ppo.py \
     --task H1-Walking-v0 --num_envs 4096 --max_iterations 3000
 
     # Headless 모드 (더 빠름)
-    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking.py \
+    /home/ldj/IsaacLab/isaaclab.sh -p /home/ldj/RL_project_ws/exts/h1_locomotion/scripts/train_walking_ppo.py \
     --task H1-Walking-v0 --num_envs 4096 --max_iterations 3000 --headless
 """
 

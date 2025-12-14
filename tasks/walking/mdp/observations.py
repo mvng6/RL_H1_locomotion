@@ -39,7 +39,7 @@ class ObservationsCfg:
             func=mdp.contact_forces,
             params={
                 "sensor_cfg": mdp.SceneEntityCfg("contact_forces", body_names=".*ankle_link"),
-                "threshold": 1.0,
+                "threshold": 1.0,                
             },
         )
 
