@@ -22,5 +22,6 @@ runs/
 output/
 
 # Data directories (large files)
+data
 data/amass/
 data/processed/retargeted_motions/data/mapping/SMPL_python_v.1.1.0/
