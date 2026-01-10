@@ -23,9 +23,11 @@ setup(
         "h1_locomotion",
         "h1_locomotion.config",
         "h1_locomotion.config.agents",
+        "h1_locomotion.config.amp",
         "h1_locomotion.tasks",
         "h1_locomotion.tasks.walking",
         "h1_locomotion.tasks.walking.mdp",
+        "h1_locomotion.tasks.walking.amp",
         "h1_locomotion.tasks.locomotion",
     ],
     # 패키지 데이터 포함 (필요한 경우)
