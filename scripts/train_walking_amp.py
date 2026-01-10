@@ -134,6 +134,13 @@ class DiscriminatorTrainer:
         """
         self.discriminator.train()
         
+        # Expert 데이터셋이 비어있는지 확인
+        if len(self.expert_dataset) == 0:
+            raise ValueError(
+                "Expert dataset is empty. Cannot train discriminator without expert data. "
+                f"Please check the expert motion file and ensure it contains valid data."
+            )
+        
         # Expert 데이터 샘플링 (iterator 재사용으로 효율성 향상)
         try:
             if self.expert_iterator is None:
@@ -142,7 +149,14 @@ class DiscriminatorTrainer:
         except StopIteration:
             # Iterator가 소진되면 새로 생성
             self.expert_iterator = iter(self.expert_loader)
-            expert_batch = next(self.expert_iterator)
+            try:
+                expert_batch = next(self.expert_iterator)
+            except StopIteration:
+                # 데이터셋이 비어있는 경우 (이미 위에서 체크했지만 방어적 코딩)
+                raise ValueError(
+                    "Expert dataset iterator is empty. This should not happen if dataset length check passed. "
+                    f"Dataset length: {len(self.expert_dataset)}"
+                )
         
         expert_transitions, expert_labels = expert_batch
         expert_transitions = expert_transitions.to(self.device)
@@ -285,6 +299,13 @@ def main():
     
     expert_dataset = MotionDataset(str(expert_motion_path), device=args_cli.device)
     print(f"[INFO] Expert dataset loaded: {len(expert_dataset)} motion clips")
+    
+    # 데이터셋이 비어있는지 확인
+    if len(expert_dataset) == 0:
+        raise ValueError(
+            f"Expert dataset is empty. Cannot train discriminator without expert data. "
+            f"Please check the expert motion file: {expert_motion_path}"
+        )
     
     # Discriminator Trainer 초기화
     disc_trainer = DiscriminatorTrainer(discriminator, expert_dataset, disc_cfg, device=args_cli.device)

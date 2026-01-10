@@ -89,7 +89,11 @@ class Discriminator(nn.Module):
         """Style reward 계산.
         
         Discriminator의 출력을 보상으로 변환:
-        R_style = -log(D(s_t, s_{t+1}))
+        R_style = -log(1 - D(s_t, s_{t+1}))
+        
+        Discriminator는 1을 expert motion에, 0을 policy motion에 출력하도록 학습됨.
+        따라서 policy가 expert처럼 보이려면 D가 높아야 하고, -log(1-D)로 보상하면
+        D가 높을수록 (expert-like) 보상이 커짐.
         
         Args:
             state_transitions: (B, 2*state_dim) State transitions
@@ -100,6 +104,8 @@ class Discriminator(nn.Module):
         probs = self.forward(state_transitions)
         # 안정성을 위해 클리핑
         probs = torch.clamp(probs, min=1e-7, max=1.0 - 1e-7)
-        rewards = -torch.log(probs).squeeze(-1)
+        # 올바른 AMP 공식: -log(1-D)
+        # D가 높을수록 (expert-like) 보상이 커짐
+        rewards = -torch.log(1.0 - probs).squeeze(-1)
         return rewards
 

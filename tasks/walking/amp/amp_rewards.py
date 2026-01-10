@@ -19,7 +19,6 @@ from typing import Optional
 
 def compute_style_reward(
     env,
-    state_transitions: torch.Tensor,
     discriminator,  # Discriminator 객체 (런타임에 주입)
     weight: float = 1.0
 ) -> torch.Tensor:
@@ -27,13 +26,50 @@ def compute_style_reward(
     
     Args:
         env: RL 환경
-        state_transitions: (num_envs, 2*state_dim) State transitions
         discriminator: Discriminator 네트워크
         weight: Style reward 가중치
         
     Returns:
         rewards: (num_envs,) Style rewards
     """
+    # 환경에서 현재 상태와 이전 상태를 추출하여 state_transitions 계산
+    robot = env.scene["robot"]
+    
+    # 현재 상태 추출 (Root position + rotation + joint positions + velocities)
+    # 상태 벡터 구성: Root pos (3) + Root rot (4) + Joint pos (102) + Joint vel (102) = 211
+    root_pos = robot.data.root_pos_w  # (num_envs, 3)
+    root_rot = robot.data.root_quat_w  # (num_envs, 4) - quaternion
+    joint_pos = robot.data.joint_pos  # (num_envs, num_joints, 3) -> flatten
+    joint_vel = robot.data.joint_vel  # (num_envs, num_joints, 3) -> flatten
+    
+    # Joint positions와 velocities를 flatten
+    num_envs = root_pos.shape[0]
+    joint_pos_flat = joint_pos.view(num_envs, -1)  # (num_envs, num_joints*3)
+    joint_vel_flat = joint_vel.view(num_envs, -1)  # (num_envs, num_joints*3)
+    
+    # 현재 상태 벡터 구성
+    current_state = torch.cat([
+        root_pos,      # (num_envs, 3)
+        root_rot,      # (num_envs, 4)
+        joint_pos_flat,  # (num_envs, num_joints*3)
+        joint_vel_flat,  # (num_envs, num_joints*3)
+    ], dim=-1)  # (num_envs, state_dim)
+    
+    # 이전 상태는 환경의 이전 스텝 버퍼에서 가져오거나, 없으면 현재 상태 사용
+    # Isaac Lab에서는 이전 상태를 저장하는 버퍼가 있을 수 있지만,
+    # 없을 경우를 대비해 현재 상태를 이전 상태로 사용 (첫 스텝 처리)
+    if not hasattr(env, '_prev_state') or env._prev_state is None:
+        # 첫 스텝: 이전 상태 = 현재 상태
+        prev_state = current_state.clone()
+    else:
+        prev_state = env._prev_state
+    
+    # State transition 구성: [s_t, s_{t+1}]
+    state_transitions = torch.cat([prev_state, current_state], dim=-1)  # (num_envs, 2*state_dim)
+    
+    # 현재 상태를 다음 스텝을 위한 이전 상태로 저장
+    env._prev_state = current_state.clone()
+    
     with torch.no_grad():
         style_rewards = discriminator.compute_reward(state_transitions)
     return weight * style_rewards
