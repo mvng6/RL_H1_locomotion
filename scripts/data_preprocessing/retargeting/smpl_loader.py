@@ -236,21 +236,20 @@ class SMPLLoader:
             raise FileNotFoundError(f"Motion file not found: {file_path}")
         
         try:
-            # .npz 파일 로드
-            data = np.load(str(file_path), allow_pickle=True)
-            
-            # 데이터 추출
-            trans = data['trans'].astype(np.float32)  # (T, 3) 루트 위치
-            poses = data['poses'].astype(np.float32)  # (T, 156) 전체 pose 파라미터
-            
-            # 성별 추출
-            gender = str(data['gender'].item()) if 'gender' in data else self.gender
-            
-            # 프레임레이트 추출
-            fps = float(data['mocap_framerate'].item()) if 'mocap_framerate' in data else self.fps
-            
-            # Shape parameters 추출
-            betas = data['betas'].astype(np.float32) if 'betas' in data else np.zeros(16, dtype=np.float32)
+            # .npz 파일 로드 (context manager로 파일 핸들 자동 닫기)
+            with np.load(str(file_path), allow_pickle=True) as data:
+                # 데이터 추출
+                trans = data['trans'].astype(np.float32)  # (T, 3) 루트 위치
+                poses = data['poses'].astype(np.float32)  # (T, 156) 전체 pose 파라미터
+                
+                # 성별 추출
+                gender = str(data['gender'].item()) if 'gender' in data else self.gender
+                
+                # 프레임레이트 추출
+                fps = float(data['mocap_framerate'].item()) if 'mocap_framerate' in data else self.fps
+                
+                # Shape parameters 추출
+                betas = data['betas'].astype(np.float32) if 'betas' in data else np.zeros(16, dtype=np.float32)
             
             # Pose 파라미터 분리
             # poses: (T, 156) = root (3) + body joints (51 * 3 = 153)
@@ -342,9 +341,9 @@ class SMPLLoader:
             # SMPL forward pass
             output = self.smpl_model(
                 betas=betas,
-                body_pose=full_pose[t:t+1, 3:].unsqueeze(0),  # (1, 69)
-                global_orient=full_pose[t:t+1, :3].unsqueeze(0),  # (1, 3)
-                transl=root_trans[t:t+1].unsqueeze(0)  # (1, 3)
+                body_pose=full_pose[t:t+1, 3:],  # (1, 69)
+                global_orient=full_pose[t:t+1, :3],  # (1, 3)
+                transl=root_trans[t:t+1]  # (1, 3)
             )
             
             # 관절 위치 추출 (SMPL은 24개 관절)

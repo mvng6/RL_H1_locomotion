@@ -117,6 +117,9 @@ class DiscriminatorTrainer:
             pin_memory=True
         )
         
+        # Expert 데이터 iterator (효율적인 배치 샘플링을 위해 유지)
+        self.expert_iterator = None
+        
         # 손실 함수 (Binary Cross Entropy)
         self.criterion = nn.BCELoss()
         
@@ -131,8 +134,16 @@ class DiscriminatorTrainer:
         """
         self.discriminator.train()
         
-        # Expert 데이터 샘플링
-        expert_batch = next(iter(self.expert_loader))
+        # Expert 데이터 샘플링 (iterator 재사용으로 효율성 향상)
+        try:
+            if self.expert_iterator is None:
+                self.expert_iterator = iter(self.expert_loader)
+            expert_batch = next(self.expert_iterator)
+        except StopIteration:
+            # Iterator가 소진되면 새로 생성
+            self.expert_iterator = iter(self.expert_loader)
+            expert_batch = next(self.expert_iterator)
+        
         expert_transitions, expert_labels = expert_batch
         expert_transitions = expert_transitions.to(self.device)
         expert_labels = expert_labels.to(self.device)
