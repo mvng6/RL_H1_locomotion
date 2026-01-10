@@ -1,0 +1,60 @@
+# Domain Randomization Configuration
+
+domain_randomization:
+  # 활성화 여부
+  enabled: true
+  
+  # 랜덤화 주기 (에피소드마다 또는 스텝마다)
+  frequency: "episode"  # "episode" or "step"
+  
+  # 랜덤화 항목
+  parameters:
+    # 링크 질량
+    link_mass:
+      enabled: true
+      distribution: "uniform"
+      range: [-0.1, 0.1]  # ±10% 변동
+      
+    # 중심 질량 위치
+    com_position:
+      enabled: true
+      distribution: "uniform"
+      range: [-0.05, 0.05]  # ±5cm (meters)
+      
+    # 관절 마찰
+    joint_friction:
+      enabled: true
+      distribution: "uniform"
+      range: [0.0, 0.5]
+      
+    # 관절 댐핑
+    joint_damping:
+      enabled: true
+      distribution: "uniform"
+      range: [0.0, 0.1]
+      
+    # 지면 마찰
+    ground_friction:
+      enabled: true
+      distribution: "uniform"
+      range: [0.5, 1.5]
+      
+    # 제어 지연
+    control_latency:
+      enabled: true
+      distribution: "uniform"
+      range: [0.0, 0.05]  # 0 ~ 50ms (seconds)
+      
+    # 중력
+    gravity:
+      enabled: true
+      distribution: "uniform"
+      range: [9.6, 9.8]  # m/s²
+      
+    # 페이로드 (상체 추가 질량)
+    payload:
+      enabled: true
+      distribution: "uniform"
+      range: [0.0, 5.0]  # kg
+      attachment_link: "torso"
+

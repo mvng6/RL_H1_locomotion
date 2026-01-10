@@ -27,7 +27,9 @@ class ObservationsCfg:
         # 베이스 상태 (자세, 속도)
         base_lin_vel = ObsTerm(func=mdp.base_lin_vel, params={"normalize": True})
         base_ang_vel = ObsTerm(func=mdp.base_ang_vel, params={"normalize": True})
-        base_yaw_roll_pitch = ObsTerm(func=mdp.base_yaw_roll_pitch)
+        # projected_gravity: 중력 벡터를 로봇 로컬 좌표계로 투영 (자세 정보 제공)
+        # 수평 자세일 때 [0, 0, -1], 기울어지면 해당 방향으로 벡터가 변함
+        projected_gravity = ObsTerm(func=mdp.projected_gravity)
 
         # 명령 (목표 속도)
         commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
@@ -37,7 +39,7 @@ class ObservationsCfg:
             func=mdp.contact_forces,
             params={
                 "sensor_cfg": mdp.SceneEntityCfg("contact_forces", body_names=".*ankle_link"),
-                "threshold": 1.0,
+                "threshold": 1.0,                
             },
         )
 

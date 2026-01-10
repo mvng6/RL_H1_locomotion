@@ -1,0 +1,60 @@
+# Curriculum Learning Configuration
+
+curriculum:
+  # 커리큘럼 활성화 여부
+  enabled: true
+  
+  # 레벨 정의
+  levels:
+    - name: "static_balance"
+      start_epoch: 0
+      end_epoch: 500
+      target_velocity:
+        lin_vel_x: [0.0, 0.0]
+        lin_vel_y: [-0.1, 0.1]
+        ang_vel_z: [-0.1, 0.1]
+      reward_weights:
+        track_lin_vel_xy_exp: 0.5
+        style_reward: 2.0
+        flat_orientation_l2: -3.0
+        base_height_l2: -1.0
+        
+    - name: "slow_walk"
+      start_epoch: 500
+      end_epoch: 2000
+      target_velocity:
+        lin_vel_x: [0.3, 0.6]
+        lin_vel_y: [-0.3, 0.3]
+        ang_vel_z: [-0.5, 0.5]
+      reward_weights:
+        track_lin_vel_xy_exp: 1.0
+        style_reward: 1.5
+        feet_air_time: 0.5
+        flat_orientation_l2: -2.0
+        
+    - name: "fast_walk"
+      start_epoch: 2000
+      end_epoch: 5000
+      target_velocity:
+        lin_vel_x: [1.0, 1.5]
+        lin_vel_y: [-0.5, 0.5]
+        ang_vel_z: [-1.0, 1.0]
+      reward_weights:
+        track_lin_vel_xy_exp: 1.5
+        style_reward: 1.0
+        feet_air_time: 0.75
+        flat_orientation_l2: -2.0
+        action_rate_l2: -0.02
+
+# 커리큘럼 업데이트 설정
+update:
+  # 업데이트 주기 (epochs)
+  frequency: 50
+  
+  # 업데이트 방식: "linear", "exponential", "step"
+  schedule: "step"
+  
+  # 부드러운 전이를 위한 interpolation
+  smooth_transition: true
+  transition_duration: 100  # epochs
+
