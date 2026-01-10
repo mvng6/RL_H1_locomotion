@@ -410,29 +410,30 @@
 
 ### 4.1 커리큘럼 설정 파일 작성
 
-- [ ] **`config/amp/curriculum_config.yaml` 작성**
-  - [ ] 커리큘럼 활성화 여부 설정
-  - [ ] 레벨 정의
-    - [ ] Level 0: Static Balance
-      - [ ] `start_epoch`: 0
-      - [ ] `end_epoch`: 500
-      - [ ] `target_velocity`: lin_vel_x, lin_vel_y, ang_vel_z 범위
-      - [ ] `reward_weights`: 각 보상 항목의 가중치
-    - [ ] Level 1: Slow Walk
-      - [ ] `start_epoch`: 500
-      - [ ] `end_epoch`: 2000
-      - [ ] `target_velocity`: 범위 설정
-      - [ ] `reward_weights`: 가중치 설정
-    - [ ] Level 2: Fast Walk
-      - [ ] `start_epoch`: 2000
-      - [ ] `end_epoch`: 5000
-      - [ ] `target_velocity`: 범위 설정
-      - [ ] `reward_weights`: 가중치 설정
-  - [ ] 업데이트 설정
-    - [ ] `frequency`: 업데이트 주기
-    - [ ] `schedule`: 업데이트 방식
-    - [ ] `smooth_transition`: 부드러운 전이 여부
-    - [ ] `transition_duration`: 전이 기간
+- [x] **`config/amp/curriculum_config.yaml` 작성** ✅ 완료
+  - [x] 커리큘럼 활성화 여부 설정 완료
+  - [x] 레벨 정의 완료
+    - [x] Level 0: Static Balance (`static_balance`)
+      - [x] `start_epoch`: 0 완료
+      - [x] `end_epoch`: 500 완료
+      - [x] `target_velocity`: lin_vel_x, lin_vel_y, ang_vel_z 범위 완료
+      - [x] `reward_weights`: 각 보상 항목의 가중치 완료
+    - [x] Level 1: Slow Walk (`slow_walk`)
+      - [x] `start_epoch`: 500 완료
+      - [x] `end_epoch`: 2000 완료
+      - [x] `target_velocity`: 범위 설정 완료
+      - [x] `reward_weights`: 가중치 설정 완료
+    - [x] Level 2: Fast Walk (`fast_walk`)
+      - [x] `start_epoch`: 2000 완료
+      - [x] `end_epoch`: 5000 완료
+      - [x] `target_velocity`: 범위 설정 완료
+      - [x] `reward_weights`: 가중치 설정 완료
+  - [x] 업데이트 설정 완료
+    - [x] `frequency`: 업데이트 주기 (50 epochs) 완료
+    - [x] `schedule`: 업데이트 방식 ("step") 완료
+    - [x] `smooth_transition`: 부드러운 전이 여부 (true) 완료
+    - [x] `transition_duration`: 전이 기간 (100 epochs) 완료
+  **완료 상태**: 커리큘럼 설정 파일 작성 완료 (3개 레벨 정의, 업데이트 설정 포함)
 
 - [ ] **설정 파일 검증**
   - [ ] YAML 문법 검증
@@ -461,16 +462,18 @@
 
 ### 4.3 학습 스크립트에 통합
 
-- [ ] **`scripts/train_walking_amp.py` 작성**
-  - [ ] Argument parser 설정
-    - [ ] `--task`: 환경 이름
-    - [ ] `--num_envs`: 환경 개수
-    - [ ] `--max_iterations`: 최대 반복 횟수
-    - [ ] `--curriculum`: 커리큘럼 설정 파일 경로
-  - [ ] 커리큘럼 매니저 초기화
-  - [ ] 학습 루프에 커리큘럼 업데이트 통합
+- [x] **`scripts/train_walking_amp.py` 기본 구조 작성** ✅ 부분 완료
+  - [x] Argument parser 설정 완료
+    - [x] `--task`: 환경 이름 완료
+    - [x] `--num_envs`: 환경 개수 완료
+    - [x] `--max_iterations`: 최대 반복 횟수 완료
+    - [x] `--curriculum_cfg`: 커리큘럼 설정 파일 경로 완료 (선택사항)
+  - [x] 기본 학습 루프 구조 완료
+  - [ ] 커리큘럼 매니저 초기화 (미구현)
+  - [ ] 학습 루프에 커리큘럼 업데이트 통합 (미구현)
     - [ ] 주기적으로 환경 설정 업데이트
     - [ ] 로깅 추가
+  **완료 상태**: 학습 스크립트 기본 구조 완료 (커리큘럼 통합은 미완료)
 
 ---
 
@@ -478,23 +481,24 @@
 
 ### 5.1 도메인 랜덤화 설정 파일 작성
 
-- [ ] **`config/amp/domain_randomization.yaml` 작성**
-  - [ ] 도메인 랜덤화 활성화 여부
-  - [ ] 랜덤화 주기 설정 (`episode` 또는 `step`)
-  - [ ] 랜덤화 항목 정의
-    - [ ] `link_mass`: 링크 질량 변동 (±10%)
-    - [ ] `com_position`: 중심 질량 위치 변동 (±5cm)
-    - [ ] `joint_friction`: 관절 마찰 (0.0 ~ 0.5)
-    - [ ] `joint_damping`: 관절 댐핑 (0.0 ~ 0.1)
-    - [ ] `ground_friction`: 지면 마찰 (0.5 ~ 1.5)
-    - [ ] `control_latency`: 제어 지연 (0 ~ 50ms)
-    - [ ] `gravity`: 중력 (9.6 ~ 9.8 m/s²)
-    - [ ] `payload`: 페이로드 (0 ~ 5kg)
+- [x] **`config/amp/domain_randomization.yaml` 작성** ✅ 완료
+  - [x] 도메인 랜덤화 활성화 여부 완료
+  - [x] 랜덤화 주기 설정 (`episode` 또는 `step`) 완료
+  - [x] 랜덤화 항목 정의 완료
+    - [x] `link_mass`: 링크 질량 변동 (±10%) 완료
+    - [x] `com_position`: 중심 질량 위치 변동 (±5cm) 완료
+    - [x] `joint_friction`: 관절 마찰 (0.0 ~ 0.5) 완료
+    - [x] `joint_damping`: 관절 댐핑 (0.0 ~ 0.1) 완료
+    - [x] `ground_friction`: 지면 마찰 (0.5 ~ 1.5) 완료
+    - [x] `control_latency`: 제어 지연 (0 ~ 50ms) 완료
+    - [x] `gravity`: 중력 (9.6 ~ 9.8 m/s²) 완료
+    - [x] `payload`: 페이로드 (0 ~ 5kg) 완료
 
-- [ ] **각 항목별 설정**
-  - [ ] `enabled`: 활성화 여부
-  - [ ] `distribution`: 분포 타입 (`uniform` 또는 `normal`)
-  - [ ] `range`: 값 범위
+- [x] **각 항목별 설정** ✅ 완료
+  - [x] `enabled`: 활성화 여부 완료
+  - [x] `distribution`: 분포 타입 (`uniform`) 완료
+  - [x] `range`: 값 범위 완료
+  **완료 상태**: 도메인 랜덤화 설정 파일 작성 완료 (8개 항목 모두 정의)
 
 ### 5.2 도메인 랜덤화 매니저 구현
 
@@ -540,16 +544,21 @@
 
 ### 6.1 에이전트 설정 작성
 
-- [ ] **`config/agents/walking_amp_ppo_cfg.py` 작성**
-  - [ ] `WalkingAMPPPORunnerCfg` 클래스 정의 (`RslRlOnPolicyRunnerCfg` 상속)
-    - [ ] 실험 이름: `h1_walking_amp`
-    - [ ] 정책 네트워크 설정
-      - [ ] Actor 네트워크 구조
-      - [ ] Critic 네트워크 구조
-    - [ ] PPO 알고리즘 설정
-      - [ ] 학습률
-      - [ ] 클리핑 파라미터
-      - [ ] 엔트로피 계수
+- [x] **`config/agents/walking_amp_ppo_cfg.py` 작성** ✅ 완료
+  - [x] `WalkingAMPPPORunnerCfg` 클래스 정의 (`RslRlOnPolicyRunnerCfg` 상속) 완료
+    - [x] 실험 이름: `h1_walking_amp` 완료
+    - [x] 정책 네트워크 설정 완료
+      - [x] Actor 네트워크 구조 [512, 256, 128] 완료
+      - [x] Critic 네트워크 구조 [512, 256, 128] 완료
+      - [x] 활성화 함수: "elu" 완료
+    - [x] PPO 알고리즘 설정 완료
+      - [x] 학습률: 1.0e-3 완료
+      - [x] 클리핑 파라미터: 0.2 완료
+      - [x] 엔트로피 계수: 0.01 완료
+      - [x] Value loss 계수: 1.0 완료
+      - [x] 학습 에폭: 5 완료
+      - [x] 미니배치 수: 4 완료
+  **완료 상태**: 에이전트 설정 파일 작성 완료 (PPO 하이퍼파라미터 모두 정의)
 
 - [ ] **설정 검증**
   - [ ] PPO 설정 값 검증
@@ -557,19 +566,25 @@
 
 ### 6.2 학습 스크립트 완성
 
-- [ ] **`scripts/train_walking_amp.py` 완성**
-  - [ ] 환경 생성
-  - [ ] Discriminator 초기화
-  - [ ] Expert 데이터셋 로드
-  - [ ] RSL-RL Runner 초기화
-  - [ ] 커리큘럼 매니저 통합
-  - [ ] 도메인 랜덤화 매니저 통합
-  - [ ] 학습 루프 구현
-    - [ ] 데이터 수집
-    - [ ] Discriminator 학습
-    - [ ] Policy 학습
-    - [ ] 커리큘럼 업데이트
-    - [ ] 로깅 및 체크포인트 저장
+- [x] **`scripts/train_walking_amp.py` 기본 구조 완성** ✅ 부분 완료
+  - [x] 환경 생성 완료
+  - [x] Discriminator 초기화 완료 (`DiscriminatorTrainer` 클래스 포함)
+  - [x] Expert 데이터셋 로드 완료 (`MotionDataset` 사용)
+  - [x] RSL-RL Runner 초기화 완료
+  - [x] 기본 학습 루프 구조 완료
+  - [ ] 커리큘럼 매니저 통합 (미구현)
+  - [ ] 도메인 랜덤화 매니저 통합 (미구현)
+  - [x] 학습 루프 기본 구조 구현 완료
+    - [x] 데이터 수집 (RSL-RL 기본 루프 사용) 완료
+    - [x] Discriminator 학습 구조 (`DiscriminatorTrainer.train_step()` 메서드) 완료
+    - [x] Policy 학습 (RSL-RL runner 사용) 완료
+    - [ ] 커리큘럼 업데이트 (미구현)
+    - [x] 로깅 및 체크포인트 저장 완료
+  **완료 상태**: 
+  - ✅ 학습 스크립트 기본 구조 완료
+  - ✅ Discriminator 초기화 및 학습 구조 구현 완료
+  - ⚠️ 주의: Discriminator 학습 루프는 통합되지 않음 (별도 호출 필요)
+  - ⚠️ 주의: 커리큘럼 및 도메인 랜덤화 통합 미완료
 
 - [ ] **학습 스크립트 테스트**
   - [ ] 소규모 환경으로 테스트 실행
@@ -577,14 +592,18 @@
 
 ### 6.3 테스트 스크립트 작성
 
-- [ ] **`scripts/play_walking_amp.py` 작성**
-  - [ ] Argument parser 설정
-    - [ ] `--task`: 환경 이름
-    - [ ] `--checkpoint`: 체크포인트 경로
-    - [ ] `--num_envs`: 환경 개수
-  - [ ] 환경 생성
-  - [ ] 체크포인트 로드
-  - [ ] 정책 실행 및 시각화
+- [x] **`scripts/play_walking_amp.py` 작성** ✅ 완료
+  - [x] Argument parser 설정 완료
+    - [x] `--task`: 환경 이름 완료
+    - [x] `--checkpoint`: 체크포인트 경로 완료
+    - [x] `--num_envs`: 환경 개수 완료
+    - [x] `--discriminator_checkpoint`: Discriminator 체크포인트 경로 완료 (선택사항)
+    - [x] `--num_steps`: 실행 스텝 수 완료
+  - [x] 환경 생성 완료
+  - [x] 체크포인트 로드 완료
+  - [x] 정책 실행 및 시각화 완료
+  - [x] 진행 상황 출력 완료 (평균 보상 등)
+  **완료 상태**: 테스트 스크립트 구현 완료 (학습된 정책 테스트 가능)
 
 ### 6.4 학습 실행
 
@@ -674,6 +693,46 @@
 
 ---
 
-**최종 업데이트**: 2025-01-XX  
+---
+
+## 구현 진행 상황 요약
+
+### 완료된 Phase
+- ✅ **Phase 1**: 프로젝트 구조 초기화 (100% 완료)
+- ✅ **Phase 3**: AMP Network Architecture & Environment Setup (90% 완료, 테스트 항목 제외)
+
+### 부분 완료된 Phase
+- 🔄 **Phase 2**: Mocap Data Preprocessing Pipeline (30% 완료)
+  - ✅ AMASS 데이터셋 준비
+  - ✅ SMPL 데이터 로더 구현
+  - ❌ H1 스켈레톤 정의 (미완료)
+  - ❌ 리타겟팅 엔진 (미완료)
+  - ❌ 데이터 전처리 스크립트 (미완료)
+  
+- 🔄 **Phase 4**: Curriculum Learning Strategy (30% 완료)
+  - ✅ 커리큘럼 설정 파일 작성
+  - ❌ 커리큘럼 매니저 구현 (미완료)
+  - ❌ 학습 스크립트 통합 (미완료)
+  
+- 🔄 **Phase 5**: Domain Randomization (40% 완료)
+  - ✅ 도메인 랜덤화 설정 파일 작성
+  - ✅ 도메인 랜덤화 매니저 기본 구조 (Isaac Lab API 통합 필요)
+  - ❌ 환경 및 학습 스크립트 통합 (미완료)
+  
+- 🔄 **Phase 6**: 학습 및 테스트 (60% 완료)
+  - ✅ 에이전트 설정 작성
+  - ✅ 학습 스크립트 기본 구조 (Discriminator 학습 루프 통합 필요)
+  - ✅ 테스트 스크립트 작성
+  - ❌ 실제 학습 실행 및 검증 (미완료)
+
+### 다음 우선순위 작업
+1. **Phase 2 완성**: H1 스켈레톤 정의 및 리타겟팅 엔진 구현
+2. **Discriminator 학습 루프 통합**: `train_walking_amp.py`에 Discriminator 학습 통합
+3. **커리큘럼 매니저 구현**: Phase 4.2 완성
+4. **도메인 랜덤화 API 통합**: Phase 5.2 완성
+
+---
+
+**최종 업데이트**: 2025-01-XX (프로젝트 검토 반영)  
 **작성자**: AI Robotics Engineer
 
